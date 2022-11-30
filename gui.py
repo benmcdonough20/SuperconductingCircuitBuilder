@@ -1,8 +1,9 @@
 from tkinter import Tk, Frame, mainloop,  Button, Toplevel, Entry, Label, StringVar
 from constants import *
 from node import Ground
+from connection import Anchor
 from smart_canvas import SmartCanvas
-from branch_element import Capacitor, JosephsonJunction, Inductor
+from branch_element import Capacitor, JosephsonJunction, Inductor, BranchElement
 
 class CircuitGui:
     def __init__(self):
@@ -29,9 +30,7 @@ class CircuitGui:
 
     def export(self):
         for element in self.branch_elements:
-            node1 = self.nodes.index(element.nodes[0])
-            node2 = self.nodes.index(element.nodes[1])
-            print(f"[{element} , {node1}, {node2}, {element.properties}")
+            print(element)
 
     def edit_mode(self):
         self.canvas.state.edit()
@@ -45,9 +44,15 @@ class CircuitGui:
     def add_branch_element(self, element):
         self.branch_elements.append(element)
         for node in element.nodes:
-            self.nodes.append(node)
+            self.add_node(node)
 
-    def delete(self, element):
+    def delete(self, object):
+        if issubclass(type(object), BranchElement):
+            self.delete_branch_element(object)
+        elif type(object) == Anchor:
+            object.delete()
+            
+    def delete_branch_element(self, element):
         self.branch_elements.remove(element)
         self.canvas.toplayer.remove(element)
         for node in element.nodes:
@@ -62,8 +67,11 @@ class CircuitGui:
 
     def remove_node(self, node):
         self.nodes.remove(node)
+        for i,node in enumerate(self.nodes):
+            node.idx = i+1
 
     def add_node(self, node):
+        node.idx = len(self.nodes)+1
         self.nodes.append(node)
 
     def add_ground(self, node):
@@ -75,7 +83,7 @@ class CircuitGui:
             super().__init__(gui.window)
 
             self.gui = gui
-            self.editor = gui.PropertyEditor()
+            self.editor = gui.PropertyEditor(self.gui)
 
             self.capacitor_button = Button(self, text = "Add Capacitor", command=lambda : self.gui.add_branch_element(Capacitor(0,0,self.gui.canvas)))
             self.inductor_button = Button(self, text = "Add Inductor", command=lambda : self.gui.add_branch_element(Inductor(0,0,self.gui.canvas)))
@@ -95,7 +103,7 @@ class CircuitGui:
 
     class PropertyEditor:
 
-        def __init_(self, gui):
+        def __init__(self, gui):
             self.gui = gui
 
         def open(self, object):
@@ -115,7 +123,9 @@ class CircuitGui:
             def cleanup():
                 window.destroy()
                 for name, text in zip(object.properties.keys(), textVars):
-                    object.properties[name] = text.get()
+                    object.properties[name] = float(text.get())
+
+                self.gui.canvas.redraw()
 
             close_button = Button(window, text = "Done", command = cleanup)
             close_button.pack()

@@ -9,6 +9,7 @@ class CanvasElement:
         self.y = y
         self.rot = rot
         self.canvas = canvas
+        self.color = "black"
         if not bbox:
             self.bbox = Bbox(SPACING/2,SPACING/2)
         self.canvas.add_object(self)

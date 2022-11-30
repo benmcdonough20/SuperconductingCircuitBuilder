@@ -13,5 +13,6 @@ DEFAULT_WIDTH = 800
 DEFAULT_HEIGHT = 600
 BOTTOM = 0
 TOP = 1
+FONTSIZE = 10
 
 Bbox = namedtuple("Bbox", ("width", "height"))

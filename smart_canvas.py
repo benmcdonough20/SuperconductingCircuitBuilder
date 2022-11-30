@@ -2,7 +2,6 @@ from tkinter import Canvas
 from constants import *
 from node import Node, Ground
 from connection import Anchor
-from branch_element import BranchElement
 
 
 class SmartCanvas(Canvas):
@@ -56,7 +55,7 @@ class SmartCanvas(Canvas):
         x, y = self.abs_coords(event.x, event.y)
         if self.state == "dragging":
             self.drop(x,y)
-        elif self.state == "None":
+        else:
             self.left_click(x,y)
 
         self.state.reset() 
@@ -83,8 +82,13 @@ class SmartCanvas(Canvas):
         
     def left_click(self, x, y):
         self.active_object = self.object_under_mouse(x, y)
-        if self.active_object:
+        
+        if self.state == "None" and self.active_object:
             self.active_object.rotate()
+        elif self.state.state == "editing":
+            self.gui.edit(self.active_object)
+        elif self.state == "deleting":
+            self.gui.delete(self.active_object)
 
         self.state.reset()
         self.redraw()
@@ -100,6 +104,7 @@ class SmartCanvas(Canvas):
                 self.active_object.merge(other)
 
         self.state.reset()
+        self.redraw()
         
     def redraw(self):
 
@@ -156,6 +161,10 @@ class SmartCanvas(Canvas):
         x2r, y2r = self.rel_coords(x2,y2)
         self.create_line(x1r, y1r, x2r, y2r, **kwargs)
 
+    def rel_text(self, x, y, text, **kwargs):
+        xr, yr = self.rel_coords(x, y)
+        self.create_text(xr, yr, text=text, font = f'Helvetica {FONTSIZE} bold', **kwargs)
+
     def rel_curve(self, p1, p2, p3, **kwargs):
         p1r = self.rel_coords(*p1)
         p2r = self.rel_coords(*p2)
@@ -187,7 +196,7 @@ class SmartCanvas(Canvas):
         self.create_oval(x1r, y1r, x2r, y2r, **kwargs)
 
     def rel_coords(self, x, y):
-        return ((self.offsetx+x*self.zoom_factor)*SPACING, (self.offsety+y*self.zoom_factor)*SPACING)
+        return (self.offsetx+x*self.zoom_factor, self.offsety+y*self.zoom_factor)
 
     def abs_coords(self, x, y):
         return((x-self.offsetx)/self.zoom_factor, (y-self.offsety)/self.zoom_factor)

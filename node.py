@@ -7,8 +7,9 @@ class Node(CanvasElement):
 
     layer = TOP
 
-    def __init__(self, x, y, canvas, rot = 0):
-        super().__init__(x, y, canvas, rot = rot)
+    def __init__(self, x, y, canvas, idx=0):
+        self.idx = idx
+        super().__init__(x, y, canvas)
         self.elements = []
         self.connections = []
 
@@ -28,7 +29,8 @@ class Node(CanvasElement):
             conn.rewire()
 
     def draw(self):
-        self.canvas.rel_point(self.x, self.y, fill="red",width=0)
+        self.canvas.rel_text(self.x+FONTSIZE, self.y-FONTSIZE, str(self.idx))
+        self.canvas.rel_point(self.x, self.y, fill="black",width=0)
          
 class Ground(Node):
 

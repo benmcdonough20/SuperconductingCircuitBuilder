@@ -9,8 +9,10 @@ class BranchElement(CanvasElement):
     layer = TOP
 
     def __init__(self, x, y, canvas, s = 1):
-        super().__init__(x*SPACING, y*SPACING, canvas)
+
         self.properties = {}
+
+        super().__init__(x*SPACING, y*SPACING, canvas)
         self.w = 75
         self.h = 75
 
@@ -31,10 +33,16 @@ class BranchElement(CanvasElement):
         self.disps = []
 
     def __str__(self):
-        return "Branch Element"
+        props_rep = []
+        for prop in self.properties:
+            props_rep.append(f"{prop}={self.properties[prop]},")
+        props_string = "".join(props_rep)
+        props_string = props_string[:-1]
+        return f"[{self.name},{self.nodes[0].idx},{self.nodes[1].idx},{props_string}]"
 
     def draw(self):
-        self.canvas.rel_point(self.x, self.y, width = 2, fill = "red")
+        for i, prop in enumerate(self.properties):
+            self.canvas.rel_text(SPACING+self.x, self.y-SPACING-i*FONTSIZE*1.5, str(prop) + " = "+str(self.properties[prop]), fill = self.color)
 
     def in_bbox(self,x,y):
         self.disps.clear()
@@ -72,6 +80,7 @@ class BranchElement(CanvasElement):
 class Capacitor(BranchElement):
 
     layer = TOP
+    name = "C"
 
     def __init__(self, x, y, canvas):
         super().__init__(x, y, canvas)
@@ -79,26 +88,26 @@ class Capacitor(BranchElement):
         self.properties["C"] = self.C
 
 
-    def __str__(self):
-        return "C"
-
     def draw(self):
+        super().draw()
         if self.rot == 1 or self.rot == 3:
-            self.canvas.rel_line(self.x, self.y+SPACING, self.x, self.y-SPACING, width =3)
-            self.canvas.rel_line(self.x+SPACING*.75, self.y-5, self.x-SPACING*.75, self.y-5, width = 4)
-            self.canvas.rel_line(self.x+SPACING*.75, self.y+5, self.x-SPACING*.75, self.y+5, width =4)
+            self.canvas.rel_line(self.x, self.y+SPACING, self.x, self.y-SPACING, width =3, fill = self.color)
+            self.canvas.rel_line(self.x+SPACING*.75, self.y-5, self.x-SPACING*.75, self.y-5, width = 4, fill = self.color)
+            self.canvas.rel_line(self.x+SPACING*.75, self.y+5, self.x-SPACING*.75, self.y+5, width =4, fill = self.color)
             self.canvas.rel_box(self.x+SPACING*.75, self.y+3, self.x-SPACING*.75, self.y-3,fill="white",width=0)
 
         if self.rot == 0 or self.rot == 2:
-            self.canvas.rel_line(self.x+SPACING, self.y, self.x-SPACING, self.y, width =3)
-            self.canvas.rel_line(self.x+5, self.y+SPACING*.75, self.x+5, self.y-SPACING*.75, width=4)
-            self.canvas.rel_line(self.x-5, self.y+SPACING*.75, self.x-5, self.y-SPACING*.75, width =4)
+            self.canvas.rel_line(self.x+SPACING, self.y, self.x-SPACING, self.y, width =3, fill = self.color)
+            self.canvas.rel_line(self.x+5, self.y+SPACING*.75, self.x+5, self.y-SPACING*.75, width=4, fill = self.color)
+            self.canvas.rel_line(self.x-5, self.y+SPACING*.75, self.x-5, self.y-SPACING*.75, width =4, fill = self.color)
             self.canvas.rel_box(self.x+3, self.y+SPACING*.75, self.x-3, self.y-SPACING*.75,fill="white",width=0)
+
 
 
 class JosephsonJunction(BranchElement):
 
     layer = TOP
+    name = "JJ"
 
     def __init__(self, x, y, canvas):
         super().__init__(x, y, canvas)
@@ -108,45 +117,43 @@ class JosephsonJunction(BranchElement):
         self.properties["EJ"] = self.EJ
 
     def draw(self):
+        super().draw()
         if self.rot == 1 or self.rot == 3:
-            self.canvas.rel_line(self.x, self.y+SPACING, self.x, self.y-SPACING, width =3)
+            self.canvas.rel_line(self.x, self.y+SPACING, self.x, self.y-SPACING, width =3, fill = self.color)
 
         if self.rot == 0 or self.rot == 2:
-            self.canvas.rel_line(self.x+SPACING, self.y, self.x-SPACING, self.y, width =3)
+            self.canvas.rel_line(self.x+SPACING, self.y, self.x-SPACING, self.y, width =3, fill = self.color)
        
         self.canvas.rel_box(self.x-SPACING*.75, self.y-SPACING*.75, self.x+SPACING*.75, self.y+SPACING*.75, fill="white", width = 4) 
-        self.canvas.rel_line(self.x-SPACING*.75, self.y-SPACING*.75, self.x+SPACING*.75, self.y+SPACING*.75, width = 4) 
-        self.canvas.rel_line(self.x+SPACING*.75, self.y-SPACING*.75, self.x-SPACING*.75, self.y+SPACING*.75, width = 4) 
+        self.canvas.rel_line(self.x-SPACING*.75, self.y-SPACING*.75, self.x+SPACING*.75, self.y+SPACING*.75, width = 4, fill = self.color) 
+        self.canvas.rel_line(self.x+SPACING*.75, self.y-SPACING*.75, self.x-SPACING*.75, self.y+SPACING*.75, width = 4, fill = self.color) 
 
-    def __str__(self):
-        return "JJ"
         
 
 class Inductor(BranchElement):
 
     layer = TOP
+    name = "L"
 
     def __init__(self, x, y, canvas):
         super().__init__(x, y, canvas, s = 2)
-        self.EJ = 21
-        self.EC = 1.2
-        self.properties["EC"] = self.EC
-        self.properties["EJ"] = self.EJ
+        self.L = 1.2
+        self.properties["L"] = self.L
 
-    def __str__(self):
-        return "L"
+
 
     def draw(self):
+        super().draw()
         num = 4
         spacing = SPACING*2/(num)
         if self.rot == 0 or self.rot == 2:
             for i in range(num+1):
                 self.canvas.rel_circle(self.x-(num*spacing/2)+i*spacing, self.y, spacing, width = 3)
-            self.canvas.rel_line(self.x+SPACING*1.5, self.y, self.x+SPACING*2, self.y, width =3)
-            self.canvas.rel_line(self.x-SPACING*1.5, self.y, self.x-SPACING*2, self.y, width =3)
+            self.canvas.rel_line(self.x+SPACING*1.5, self.y, self.x+SPACING*2, self.y, width =3, fill = self.color)
+            self.canvas.rel_line(self.x-SPACING*1.5, self.y, self.x-SPACING*2, self.y, width =3, fill = self.color)
 
         if self.rot == 1 or self.rot == 3:
             for i in range(num+1):
                 self.canvas.rel_circle(self.x, self.y-(num*spacing/2)+i*spacing, spacing, width = 3)
-            self.canvas.rel_line(self.x, self.y+SPACING*1.5, self.x, self.y+SPACING*2, width =3)
-            self.canvas.rel_line(self.x, self.y-SPACING*1.5, self.x, self.y-SPACING*2, width =3)
+            self.canvas.rel_line(self.x, self.y+SPACING*1.5, self.x, self.y+SPACING*2, width =3, fill = self.color)
+            self.canvas.rel_line(self.x, self.y-SPACING*1.5, self.x, self.y-SPACING*2, width =3, fill = self.color)

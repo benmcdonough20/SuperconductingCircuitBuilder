@@ -75,7 +75,7 @@ class Connection(CanvasElement):
                 for y in range(oy, ty, -1):
                     if (sx*SPACING, y*SPACING) == (self.origin.x, self.origin.y) and not self.d == [0,0]:
                         for i in range(3):
-                            self.links.append(Link(sx+1,y-i+1))
+                            self.links.append(Link(sx-1,y+i-1))
                     self.links.append(Link(sx, y))
 
         if self.d[0]:
@@ -102,7 +102,6 @@ class Connection(CanvasElement):
         self.rewire()
         if len(self.links) == 0:
             return
-        #self.canvas.rel_line(self.origin.x, self.origin.y, self.links[0].x*SPACING, self.links[0].y*SPACING, width = 3)
         for i in range(len(self.links)-1):
             link1 = self.links[i] 
             link2 = self.links[i+1] 
@@ -139,6 +138,8 @@ class Link:
 
 class Anchor(CanvasElement):
 
+    layer = 1
+
     def __init__(self,x,y,connection):
         super().__init__(x,y,connection.canvas)
         self.connection = connection
@@ -151,3 +152,7 @@ class Anchor(CanvasElement):
         self.canvas.toplayer.remove(other)
         idx = other.connection.anchors.index(other)
         other.connection.anchors[idx] = self
+    
+    def delete(self):
+        self.canvas.toplayer.remove(self)
+        self.connection.anchors.remove(self)
