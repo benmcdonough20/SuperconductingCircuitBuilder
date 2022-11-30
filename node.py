@@ -5,11 +5,12 @@ from math import sin, cos, pi
 
 class Node(CanvasElement):
 
+    layer = TOP
+
     def __init__(self, x, y, canvas, rot = 0):
         super().__init__(x, y, canvas, rot = rot)
         self.elements = []
         self.connections = []
-        canvas.add_object(self)
 
     def merge(self, other):
         self.connections += other.connections
@@ -30,6 +31,8 @@ class Node(CanvasElement):
         self.canvas.rel_point(self.x, self.y, fill="red",width=0)
          
 class Ground(Node):
+
+    Layer = TOP
 
     def draw(self):
         p1 = (self.x+SPACING/2*cos(self.rot*pi/2), self.y+SPACING/2*sin(self.rot*pi/2))

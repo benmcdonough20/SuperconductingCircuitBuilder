@@ -5,9 +5,12 @@ from connection import Connection
 import numpy as np
 
 class BranchElement(CanvasElement):
-   
+
+    layer = TOP
+
     def __init__(self, x, y, canvas, s = 1):
         super().__init__(x*SPACING, y*SPACING, canvas)
+        self.properties = {}
         self.w = 75
         self.h = 75
 
@@ -25,12 +28,13 @@ class BranchElement(CanvasElement):
         for node in self.nodes:
             node.elements.append(self)
 
-        canvas.add_object(self)
         self.disps = []
+
+    def __str__(self):
+        return "Branch Element"
 
     def draw(self):
         self.canvas.rel_point(self.x, self.y, width = 2, fill = "red")
-
 
     def in_bbox(self,x,y):
         self.disps.clear()
@@ -41,7 +45,6 @@ class BranchElement(CanvasElement):
 
     def drag(self, x, y):
         super().drag(x,y)
-
         for node,disp in zip(self.nodes,self.disps):
             if len(node.elements) == 1 and all([len(conn.anchors)==0 for conn in node.connections]):
                 node.drag(disp[0]+self.x, disp[1]+self.y)
@@ -65,10 +68,19 @@ class BranchElement(CanvasElement):
                 node.y += self.y
                 node.rotate()
         
-        self.canvas.redraw()
-
         
 class Capacitor(BranchElement):
+
+    layer = TOP
+
+    def __init__(self, x, y, canvas):
+        super().__init__(x, y, canvas)
+        self.C = .02
+        self.properties["C"] = self.C
+
+
+    def __str__(self):
+        return "C"
 
     def draw(self):
         if self.rot == 1 or self.rot == 3:
@@ -86,6 +98,15 @@ class Capacitor(BranchElement):
 
 class JosephsonJunction(BranchElement):
 
+    layer = TOP
+
+    def __init__(self, x, y, canvas):
+        super().__init__(x, y, canvas)
+        self.EJ = 21
+        self.EC = 1.2
+        self.properties["EC"] = self.EC
+        self.properties["EJ"] = self.EJ
+
     def draw(self):
         if self.rot == 1 or self.rot == 3:
             self.canvas.rel_line(self.x, self.y+SPACING, self.x, self.y-SPACING, width =3)
@@ -97,11 +118,23 @@ class JosephsonJunction(BranchElement):
         self.canvas.rel_line(self.x-SPACING*.75, self.y-SPACING*.75, self.x+SPACING*.75, self.y+SPACING*.75, width = 4) 
         self.canvas.rel_line(self.x+SPACING*.75, self.y-SPACING*.75, self.x-SPACING*.75, self.y+SPACING*.75, width = 4) 
 
+    def __str__(self):
+        return "JJ"
         
 
 class Inductor(BranchElement):
+
+    layer = TOP
+
     def __init__(self, x, y, canvas):
         super().__init__(x, y, canvas, s = 2)
+        self.EJ = 21
+        self.EC = 1.2
+        self.properties["EC"] = self.EC
+        self.properties["EJ"] = self.EJ
+
+    def __str__(self):
+        return "L"
 
     def draw(self):
         num = 4

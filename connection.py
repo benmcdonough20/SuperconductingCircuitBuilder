@@ -2,6 +2,8 @@ from constants import *
 from canvas_element import CanvasElement
 
 class Connection(CanvasElement):
+
+    layer = BOTTOM
     
     def __init__(self, origin, dest, d, canvas):
         self.anchors = []
@@ -11,7 +13,7 @@ class Connection(CanvasElement):
         self.links = []
         self.canvas = canvas
         self.selected_link = None
-        self.canvas.add_object(self,0)
+        canvas.add_object(self)
         self.rewire()
     
     def rotate(self):
@@ -140,7 +142,6 @@ class Anchor(CanvasElement):
     def __init__(self,x,y,connection):
         super().__init__(x,y,connection.canvas)
         self.connection = connection
-        self.canvas.add_object(self)
         self.canvas.active_object = self
 
     def draw(self):

@@ -1,21 +1,23 @@
 from constants import *
 
 class CanvasElement:
-   
+    
+    layer = BOTTOM
+    
     def __init__(self, x, y, canvas, bbox = None, rot = 0):
         self.x = x
         self.y = y
-        self.canvas = canvas
         self.rot = rot
+        self.canvas = canvas
         if not bbox:
             self.bbox = Bbox(SPACING/2,SPACING/2)
+        self.canvas.add_object(self)
 
     def draw(self):
         raise NotImplementedError
     
     def rotate(self):
         self.rot = (self.rot+1)%4
-        self.canvas.redraw()
 
     def in_bbox(self, x, y):
         if not self.bbox:

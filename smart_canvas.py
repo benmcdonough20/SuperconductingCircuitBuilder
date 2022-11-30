@@ -2,6 +2,7 @@ from tkinter import Canvas
 from constants import *
 from node import Node, Ground
 from connection import Anchor
+from branch_element import BranchElement
 
 
 class SmartCanvas(Canvas):
@@ -16,10 +17,10 @@ class SmartCanvas(Canvas):
         self.bind("<Button-4>", lambda event : self.zoom(event, 1))
         self.bind("<Button-5>", lambda event : self.zoom(event,-1))
         self.bind("<B2-Motion>", lambda event : self.pan(event))
-        self.bind("<Button-2>", lambda event : self.middle_click(event))
-        self.bind("<Button-1>", lambda event : self.left_click(event))
-        self.bind("<B1-Motion>", lambda event : self.mouse_drag(event))
-        self.bind("<ButtonRelease-1>", lambda event : self.mouse_release(event))
+        self.bind("<Button-2>", lambda event : self.middle_press(event))
+        self.bind("<Button-1>", lambda event : self.left_press(event))
+        self.bind("<B1-Motion>", lambda event : self.left_drag(event))
+        self.bind("<ButtonRelease-1>", lambda event : self.left_release(event))
 
         self.dx = 0
         self.dy = 0
@@ -34,59 +35,62 @@ class SmartCanvas(Canvas):
 
         self.state = State()
 
-    def left_click(self, event):
+    def left_press(self, event):
+        x,y = self.abs_coords(event.x, event.y)
+        self.active_object = self.object_under_mouse(x,y)
 
+    def middle_press(self, event):
+        self.state.dragging()
         x,y = self.abs_coords(event.x, event.y)
         self.dx = x
         self.dy = y
 
-        self.active_object = self.get_object_clicked(x,y)
-
-    def middle_click(self, event):
-        x,y = self.abs_coords(event.x, event.y)
-        self.dx = x
-        self.dy = y
-
-    def get_object_clicked(self, x, y):
-        for object in self.toplayer:
-            if object.in_bbox(x, y):
-                return object
-        for object in self.bottomlayer:
-            if object.in_bbox(x,y):
-                return object
-        return self
-
-    def add_object(self, object, layer=1):
-        if layer == 1:
-            self.toplayer.append(object)
-        elif layer == 0:
-            self.bottomlayer.append(object)
-        self.redraw()
-        
-    def mouse_drag(self, event):
+    def left_drag(self, event):
         x, y = self.abs_coords(event.x, event.y)
         if self.active_object:
             self.active_object.drag(x, y)
             self.redraw()
         self.state.dragging()
 
-    def drag(self, x, y):
-        ...
-
-    def mouse_release(self, event):
+    def left_release(self, event):
         x, y = self.abs_coords(event.x, event.y)
+        if self.state == "dragging":
+            self.drop(x,y)
+        elif self.state == "None":
+            self.left_click(x,y)
 
-        for object in self.toplayer:
-            if object.in_bbox(x,y) and not object is self.active_object:
-                other = object
-                break
-        else:
-            for object in self.bottomlayer:
-                if object.in_bbox(x,y) and not object is self.active_object:
-                    other = object
-                    break
-            else:
-                other = self
+        self.state.reset() 
+
+    def object_under_mouse(self, x, y, exclude = None):
+        object = None
+        
+        for obj in self.toplayer:
+            if obj.in_bbox(x, y) and obj is not exclude:
+                return obj
+
+        for obj in self.bottomlayer:
+            if obj.in_bbox(x,y) and obj is not exclude:
+                return obj
+
+        return object
+
+    def add_object(self, object):
+        if object.layer == TOP:
+            self.toplayer.append(object)
+        elif object.layer == BOTTOM:
+            self.bottomlayer.append(object)
+        self.redraw()
+        
+    def left_click(self, x, y):
+        self.active_object = self.object_under_mouse(x, y)
+        if self.active_object:
+            self.active_object.rotate()
+
+        self.state.reset()
+        self.redraw()
+
+    def drop(self, x,y):
+        other = self.object_under_mouse(x, y, self.active_object)
 
         if (type(self.active_object) is Node and (type(other) is Node or type(other) is Ground)):
             self.node_merge(self.active_object, other) 
@@ -95,12 +99,8 @@ class SmartCanvas(Canvas):
             if self.active_object.connection.dest is other.connection.dest:
                 self.active_object.merge(other)
 
-        elif self.active_object is not self and self.state == "None":
-            self.active_object.rotate()
-
         self.state.reset()
         
-
     def redraw(self):
 
         self.delete("all")
@@ -187,7 +187,7 @@ class SmartCanvas(Canvas):
         self.create_oval(x1r, y1r, x2r, y2r, **kwargs)
 
     def rel_coords(self, x, y):
-        return (self.offsetx+x*self.zoom_factor, self.offsety+y*self.zoom_factor)
+        return ((self.offsetx+x*self.zoom_factor)*SPACING, (self.offsety+y*self.zoom_factor)*SPACING)
 
     def abs_coords(self, x, y):
         return((x-self.offsetx)/self.zoom_factor, (y-self.offsety)/self.zoom_factor)
@@ -195,10 +195,7 @@ class SmartCanvas(Canvas):
     def node_merge(self, node, other):
 
         self.toplayer.remove(node)
-        try:
-            self.gui.nodes.remove(node)
-        except Exception as ex:
-            print(ex.message)
+        self.gui.remove_node(node)
 
         other.merge(node)
         self.active_object = other
@@ -206,10 +203,14 @@ class SmartCanvas(Canvas):
 
 class State:
     def __init__(self):
-        self.state = "None"
+        self.reset()
     def dragging(self):
         self.state = "dragging"
     def reset(self):
         self.state = "None"
+    def edit(self):
+        self.state = "editing"
+    def delete(self):
+        self.state = "deleting"
     def __eq__(self, other):
         return self.state == other
