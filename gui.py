@@ -29,6 +29,7 @@ class CircuitGui:
         self.canvas.grid(row=0, column = 1, columnspan=4, sticky="nsew")
 
     def export(self):
+        print("--------")
         for element in self.branch_elements:
             print(element)
 

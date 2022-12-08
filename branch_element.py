@@ -35,10 +35,10 @@ class BranchElement(CanvasElement):
     def __str__(self):
         props_rep = []
         for prop in self.properties:
-            props_rep.append(f"{prop}={self.properties[prop]},")
+            props_rep.append(f"{self.properties[prop]},")
         props_string = "".join(props_rep)
         props_string = props_string[:-1]
-        return f"[{self.name},{self.nodes[0].idx},{self.nodes[1].idx},{props_string}]"
+        return f"- [{self.name},{self.nodes[0].idx},{self.nodes[1].idx},{props_string}]"
 
     def draw(self):
         for i, prop in enumerate(self.properties):
