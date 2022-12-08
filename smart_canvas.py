@@ -195,6 +195,13 @@ class SmartCanvas(Canvas):
         x2r, y2r = self.rel_coords(x2,y2)
         self.create_oval(x1r, y1r, x2r, y2r, **kwargs)
 
+    def rel_arc(self, x, y, r, t0, t1, **kwargs):
+        x1, y1 = (x-r), (y-r)
+        x2, y2 = (x+r), (y+r)
+        x1r, y1r = self.rel_coords(x1,y1)
+        x2r, y2r = self.rel_coords(x2,y2)
+        self.create_arc(x1r, y1r, x2r, y2r, start = t0, extent = t1, **kwargs)
+
     def rel_coords(self, x, y):
         return (self.offsetx+x*self.zoom_factor, self.offsety+y*self.zoom_factor)
 
