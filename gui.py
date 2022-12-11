@@ -1,4 +1,6 @@
-from tkinter import Tk, Frame, mainloop,  Button, Toplevel, Entry, Label, StringVar
+from tkinter import Tk, Frame, mainloop, Toplevel, StringVar
+from tkinter.ttk import Button, Label, Entry
+
 from constants import *
 from node import Ground
 from connection import Anchor

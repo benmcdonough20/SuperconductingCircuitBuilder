@@ -141,19 +141,24 @@ class Inductor(BranchElement):
         self.properties["L"] = self.L
 
 
-
     def draw(self):
         super().draw()
         if self.rot == 0 or self.rot == 2:
             for i in range(3):
-                self.canvas.rel_arc(self.x-SPACING+i*SPACING, self.y, SPACING/2, 0, 180, width = 3)
+                if self.rot == 0:
+                    self.canvas.rel_arc(self.x-SPACING+i*SPACING, self.y, SPACING/2, 0, 180, width = 3)
+                else:
+                    self.canvas.rel_arc(self.x-SPACING+i*SPACING, self.y, SPACING/2, -180,180, width = 3)
                 self.canvas.rel_box(self.x-SPACING*1.5+i*SPACING, self.y-2,self.x-SPACING*1.5+(i+1)*SPACING ,self.y+2, fill = "white", width = 0)
             self.canvas.rel_line(self.x+SPACING*1.5, self.y, self.x+SPACING*2, self.y, width =3, fill = self.color)
             self.canvas.rel_line(self.x-SPACING*1.5, self.y, self.x-SPACING*2, self.y, width =3, fill = self.color)
 
         if self.rot == 1 or self.rot == 3:
             for i in range(3):
-                self.canvas.rel_arc(self.x, self.y-SPACING + i*SPACING, SPACING/2, 90,180, width = 3)
+                if self.rot == 1:
+                    self.canvas.rel_arc(self.x, self.y-SPACING + i*SPACING, SPACING/2, 90,180, width = 3)
+                else:
+                    self.canvas.rel_arc(self.x, self.y-SPACING + i*SPACING, SPACING/2, -90,180, width = 3)
                 self.canvas.rel_box(self.x-2, self.y-SPACING*1.5 + i*SPACING, self.x+2, self.y+SPACING*1.5, fill = "white", width = 0)
             self.canvas.rel_line(self.x, self.y+SPACING*1.5, self.x, self.y+SPACING*2, width =3, fill = self.color)
             self.canvas.rel_line(self.x, self.y-SPACING*1.5, self.x, self.y-SPACING*2, width =3, fill = self.color)
