@@ -94,13 +94,13 @@ class CircuitGui:
             self.export_button = Button(self, text = "Export to scQubits", command = lambda:self.gui.export())
             self.delete_button = Button(self, text = "Delete", command = lambda:self.gui.delete_mode())
 
-            self.capacitor_button.grid(row = 0, column = 0)
-            self.inductor_button.grid(row = 1, column = 0)
-            self.jj_button.grid(row = 2, column = 0)
-            self.ground_button.grid(row = 3, column = 0)
-            self.editor_button.grid(row = 4, column = 0)
-            self.export_button.grid(row = 5, column = 0)
-            self.delete_button.grid(row = 6, column = 0)
+            self.capacitor_button.grid(row = 0, column = 0, sticky = "ew")
+            self.inductor_button.grid(row = 1, column = 0, sticky = "ew")
+            self.jj_button.grid(row = 2, column = 0, sticky = "ew")
+            self.ground_button.grid(row = 3, column = 0, sticky = "ew")
+            self.editor_button.grid(row = 4, column = 0, sticky = "ew")
+            self.export_button.grid(row = 5, column = 0, sticky = "ew")
+            self.delete_button.grid(row = 6, column = 0, sticky = "ew")
 
     class PropertyEditor:
 
