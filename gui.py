@@ -1,34 +1,90 @@
 from tkinter import Tk, Frame, mainloop, Toplevel, StringVar
 from tkinter.ttk import Button, Label, Entry
 
+from PyQt6.QtWidgets import (
+    QMainWindow, 
+    QApplication, 
+    QGraphicsView, 
+    QSpacerItem,
+    QSizePolicy,
+    QToolBar, 
+    QDockWidget,
+    QWidget,
+    QVBoxLayout,
+    QPushButton,
+    QToolBox
+)
+from PyQt6.QtGui import QAction
+from PyQt6.QtCore import Qt, QSize
+
+import sys
 from constants import *
 from node import Ground
 from connection import Anchor
-from smart_canvas import SmartCanvas
-from branch_element import Capacitor, JosephsonJunction, Inductor, BranchElement
+from canvas import SmartCanvas
+from branch_element import Capacitor, JosephsonJunction, Inductor, BranchElement 
+from circuit import Circuit
 
-class CircuitGui:
+MINSIZE = QSize(600,400)
+
+class CircuitGui(QMainWindow):
+
     def __init__(self):
-        self.setup_gui()
+        super().__init__()
+        self.circuit = Circuit()
+        self.initUI()
 
-        self.branch_elements = []
-        self.nodes = []
-        self.grounds = []
+    def initUI(self):
+        self.setWindowTitle("Circuit Builder")
+        self.setMinimumSize(MINSIZE)
 
-        self.add_ground(Ground(0,0, self.canvas))
+        canvas = SmartCanvas()
 
-    def setup_gui(self):
-        self.window = Tk()
+        self.init_menu()
+        self.init_toolbar()
+        self.init_toolbox()
+
+        self.setCentralWidget(canvas)
+        self.show()
+
+    def init_toolbar(self):
+        toolbar = QToolBar()
+        undo = QAction("Undo", toolbar)
+        redo = QAction("Redo", toolbar)
+
+        toolbar.addAction(undo)
+        toolbar.addAction(redo)
+
+        self.addToolBar(toolbar)
     
-        self.window.columnconfigure(0, weight=0)
-        self.window.columnconfigure(1, weight=1)
-        self.window.rowconfigure(0, weight=1)
+    def init_toolbox(self):
+        toolsdock = self.ToolsPanel(self) 
 
-        self.buttons_pane = self.ElementMegawidget(self)
-        self.buttons_pane.grid(row=0, column=0, sticky="n")
+        items_palette = toolsdock.add_section("Branch Elements")
+        add_capacitor = QPushButton("Add Capacitor")
+        #more items
+        items_palette.addWidget(add_capacitor)
 
-        self.canvas = SmartCanvas(self, width = DEFAULT_WIDTH, height=DEFAULT_HEIGHT, bg = BGCOLOR)
-        self.canvas.grid(row=0, column = 1, columnspan=4, sticky="nsew")
+        nodes_palette = toolsdock.add_section("Nodes")
+        add_ground = QPushButton("Add Ground")
+        nodes_palette.addWidget(add_ground)
+
+        circuits_palette = toolsdock.add_section("Circuits")
+        transmon = QPushButton("Transmon")
+        #more circuits
+        circuits_palette.addWidget(transmon)
+
+        toolsdock.squash(items_palette)
+        toolsdock.squash(circuits_palette)
+        toolsdock.squash(nodes_palette)
+
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, toolsdock) 
+    
+    def init_menu(self):
+        menu_bar = self.menuBar()
+        file_menu = menu_bar.addMenu('&File')
+        edit_menu = menu_bar.addMenu('&Edit')
+        help_menu = menu_bar.addMenu('&Help')
 
     def export(self):
         print("--------")
@@ -104,6 +160,28 @@ class CircuitGui:
             self.export_button.grid(row = 5, column = 0, sticky = "ew")
             self.delete_button.grid(row = 6, column = 0, sticky = "ew")
 
+
+    class ToolsPanel(QDockWidget):
+        
+        def __init__(self, *args, **kwargs):
+
+            super().__init__(*args, **kwargs)
+
+            self.toolbox = QToolBox(self)
+            self.setWidget(self.toolbox)
+        
+        def add_section(self,name):
+            section = QWidget(self.toolbox)
+            layout = QVBoxLayout()
+            section.setLayout(layout)
+            self.toolbox.addItem(section, name)
+            return layout
+        
+        def squash(self, section):
+            spacer = QSpacerItem(0,0,QSizePolicy.Policy.Ignored, QSizePolicy.Policy.MinimumExpanding)
+            section.addItem(spacer)
+
+
     class PropertyEditor:
 
         def __init__(self, gui):
@@ -136,5 +214,6 @@ class CircuitGui:
 
 if __name__ == '__main__':
 
+    app = QApplication(sys.argv)
     gui = CircuitGui()
-    mainloop()
+    app.exec()

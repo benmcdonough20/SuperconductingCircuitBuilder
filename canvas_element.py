@@ -1,22 +1,18 @@
 from constants import *
+from PyQt6.QtWidgets import QGraphicsItem
 
-class CanvasElement:
+class CanvasElement(QGraphicsItem):
     
-    layer = BOTTOM
-    
-    def __init__(self, x, y, canvas, bbox = None, rot = 0):
-        self.x = x
-        self.y = y
-        self.rot = rot
-        self.canvas = canvas
-        self.color = "black"
-        if not bbox:
-            self.bbox = Bbox(SPACING/2,SPACING/2)
-        self.canvas.add_object(self)
+    def __init__(self, x, y, rot, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ACTIVE = False
+        self.x = x #int specifying x position on grid
+        self.y = y #int specigying y position on grid
+        self.rot = rot #four different orientations
 
-    def draw(self):
+    def paint(self, *args, **kwargs):
         raise NotImplementedError
-    
+
     def rotate(self):
         self.rot = (self.rot+1)%4
 
