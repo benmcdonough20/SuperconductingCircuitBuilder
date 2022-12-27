@@ -1,12 +1,13 @@
 from constants import *
 from canvas_element import CanvasElement
+from PyQt6.QtGui import QPen, QColorConstants
 
 class Connection(CanvasElement):
 
-    layer = BOTTOM
-    
     def __init__(self, origin, dest, d, canvas):
+        super().__init__(origin.x, origin.y, canvas)
         self.anchors = []
+        self.wires = []
         self.origin = origin
         self.dest = dest
         self.d = d
@@ -15,10 +16,8 @@ class Connection(CanvasElement):
         self.selected_link = None
         canvas.add_object(self)
         self.rewire()
+        self.selected_anchor = None
     
-    def rotate(self):
-        return
-
     def rewire(self):
         self.links.clear()
  
@@ -97,62 +96,88 @@ class Connection(CanvasElement):
             linkx(oy)
             linky(tx)
 
+        if self.links:
+            self.links[-1].clickable = False
+
             
-    def draw(self):
+    def paint(self, painter):
         self.rewire()
+        pen = QPen(QColorConstants.Black, 2)
+        painter.setPen(pen)
+
         if len(self.links) == 0:
             return
+        link2 = None
         for i in range(len(self.links)-1):
             link1 = self.links[i] 
             link2 = self.links[i+1] 
 
-            self.canvas.rel_line(link1.x*SPACING, link1.y*SPACING, link2.x*SPACING, link2.y*SPACING, width = 3)
-        self.canvas.rel_line(self.links[-1].x*SPACING, self.links[-1].y*SPACING, self.dest.x, self.dest.y, width = 3)
+            painter.drawLine(link1.x*SPACING, link1.y*SPACING, link2.x*SPACING, link2.y*SPACING)
+            
+        painter.drawLine(self.links[-1].x*SPACING, self.links[-1].y*SPACING, self.dest.x, self.dest.y)
+
+        for anchor in self.anchors:
+            anchor.paint(painter)
 
     def in_bbox(self, x, y):
+        for anchor in self.anchors:
+            if anchor.in_bbox(x,y):
+                return anchor
         for link in self.links[1:]:
-            ln = link.in_bbox(x,y)
-            if ln:
-                self.selected_link = ln
+            if link.in_bbox(x,y):
+                self.selected_link = link
+                return True
+        return False
+    
+    def press(self, x, y):
+        for anchor in self.anchors:
+            if anchor.in_bbox(x,y):
+                self.selected_anchor = anchor
                 break
         else:
-            return False
-
-        self.anchors.append(Anchor(self.selected_link.x*SPACING, self.selected_link.y*SPACING, self))
-
-        return True
+            newanchor = Anchor(self.selected_link.x*SPACING, self.selected_link.y*SPACING, self)
+            self.anchors.append(newanchor)
+            self.selected_anchor = newanchor
+            
+    
+    def drag(self, x, y):
+        if self.selected_anchor:
+            self.selected_anchor.drag(x,y)
+        
 
 class Link:
     
     def __init__(self, x, y): 
         self.x = x
-        self.bbox = Bbox(SPACING/2.5, SPACING/2.5)
+        self.bbox = Bbox(SPACING, SPACING)
         self.y = y
     
     def in_bbox(self, x, y):
         sx = self.x*SPACING
         sy = self.y*SPACING
-        if (x > sx-self.bbox.width and x < sx + self.bbox.width and y > sy-self.bbox.height and y < sy+self.bbox.height):
+        if (x > sx-self.bbox.width/2 and x < sx + self.bbox.width/2 and y > sy-self.bbox.height/2 and y < sy+self.bbox.height/2):
             return self
         return None
+
+    def paint(self, painter):
+        painter.drawPoint(self.x*SPACING, self.y*SPACING)
+
 
 class Anchor(CanvasElement):
 
     layer = 1
 
     def __init__(self,x,y,connection):
-        super().__init__(x,y,connection.canvas)
         self.connection = connection
-        self.canvas.active_object = self
+        self.bbox = Bbox(SPACING, SPACING)
+        self.x = x
+        self.y = y
 
-    def draw(self):
-        self.canvas.rel_point(self.x, self.y, width = 2)
+    def paint(self, painter):
+        painter.setPen(QPen(QColorConstants.Black, 1))
+        painter.drawEllipse(self.x-5, self.y-5, 10,10)
 
-    def merge(self, other):
-        self.canvas.toplayer.remove(other)
-        idx = other.connection.anchors.index(other)
-        other.connection.anchors[idx] = self
-    
-    def delete(self):
-        self.canvas.toplayer.remove(self)
-        self.connection.anchors.remove(self)
+    def in_bbox(self, x, y):
+        if super().in_bbox(x,y):
+            return self
+        return None

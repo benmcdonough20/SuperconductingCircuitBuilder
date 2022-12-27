@@ -25,7 +25,7 @@ from canvas import SmartCanvas
 from branch_element import Capacitor, JosephsonJunction, Inductor, BranchElement 
 from circuit import Circuit
 
-MINSIZE = QSize(600,400)
+MINSIZE = QSize(800,600)
 
 class CircuitGui(QMainWindow):
 
@@ -136,30 +136,6 @@ class CircuitGui(QMainWindow):
     def add_ground(self, node):
         self.grounds.append(node)
     
-    class ElementMegawidget(Frame):
-    
-        def __init__(self, gui):
-            super().__init__(gui.window)
-
-            self.gui = gui
-            self.editor = gui.PropertyEditor(self.gui)
-
-            self.capacitor_button = Button(self, text = "Add Capacitor", command=lambda : self.gui.add_branch_element(Capacitor(0,0,self.gui.canvas)))
-            self.inductor_button = Button(self, text = "Add Inductor", command=lambda : self.gui.add_branch_element(Inductor(0,0,self.gui.canvas)))
-            self.jj_button = Button(self, text = "Add Josephson Junction", command=lambda : self.gui.add_branch_element(JosephsonJunction(0,0,self.gui.canvas)))
-            self.ground_button = Button(self, text = "Add Ground", command=lambda : self.gui.add_ground(Ground(0,0,self.gui.canvas)))
-            self.editor_button = Button(self, text = "Edit Properties", command = lambda: self.gui.edit_mode())
-            self.export_button = Button(self, text = "Export to scQubits", command = lambda:self.gui.export())
-            self.delete_button = Button(self, text = "Delete", command = lambda:self.gui.delete_mode())
-
-            self.capacitor_button.grid(row = 0, column = 0, sticky = "ew")
-            self.inductor_button.grid(row = 1, column = 0, sticky = "ew")
-            self.jj_button.grid(row = 2, column = 0, sticky = "ew")
-            self.ground_button.grid(row = 3, column = 0, sticky = "ew")
-            self.editor_button.grid(row = 4, column = 0, sticky = "ew")
-            self.export_button.grid(row = 5, column = 0, sticky = "ew")
-            self.delete_button.grid(row = 6, column = 0, sticky = "ew")
-
 
     class ToolsPanel(QDockWidget):
         
