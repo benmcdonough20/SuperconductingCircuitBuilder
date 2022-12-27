@@ -20,7 +20,7 @@ class Node(CanvasElement):
         self.connections += other.connections
         self.elements += other.elements
         for conn in other.connections:
-            conn.dest = self
+            conn.change_dest(self)
         for elem in other.elements:
             for i,node in enumerate(elem.nodes):
                 if node == other:
@@ -34,7 +34,7 @@ class Node(CanvasElement):
     def paint(self, painter):
         pen = QPen(QColorConstants.Black, 6)
         painter.setPen(pen)
-        painter.drawText(self.x+FONTSIZE, self.y-FONTSIZE, str(self.idx))
+        painter.drawText(int(self.x+FONTSIZE), int(self.y-FONTSIZE), str(self.idx))
         painter.drawPoint(self.x, self.y)
          
 class Ground(Node):

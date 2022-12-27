@@ -14,7 +14,8 @@ class SmartCanvas(QFrame):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.setAcceptDrops(True)
+            
         self.painter = QPainter()
 
         #world transform and put origin at center of screen
@@ -104,7 +105,6 @@ class SmartCanvas(QFrame):
     
     def mouseMoveEvent(self, event) -> None:
         mx,my = self.unmap(*event_loc(event))
-
         if event.buttons() == Qt.MouseButton.LeftButton: #left button drag
             self._dragging = True
             self._drag(mx, my)
@@ -160,6 +160,19 @@ class SmartCanvas(QFrame):
                 self.selected_object.drop(mx, my, object)
                 break
         self.selected_object = None
+  
+    def dragEnterEvent(self, event) -> None:
+        event.accept()
+    
+    def dropEvent(self, event) -> None:
+        x,y = self.unmap(*event_loc(event))
+        if event.mimeData().text() == "capacitor":
+            Capacitor(round(x/SPACING),round(y/SPACING), self)
+        elif event.mimeData().text() == "inductor":
+            Inductor(round(x/SPACING),round(y/SPACING), self)
+        elif event.mimeData().text() == "junction":
+            JosephsonJunction(round(x/SPACING),round(y/SPACING), self)
+        self.update()
 
     def collision(self, object):
         for other in self.objects:
@@ -171,4 +184,5 @@ class SmartCanvas(QFrame):
         return False
     
     def click(self, event):
-        ...
+        if self.selected_object:
+            self.selected_object.rotate()

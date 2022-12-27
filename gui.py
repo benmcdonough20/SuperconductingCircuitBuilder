@@ -12,10 +12,11 @@ from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QPushButton,
-    QToolBox
+    QToolBox,
+    QLabel,
 )
-from PyQt6.QtGui import QAction
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QAction, QDrag 
+from PyQt6.QtCore import Qt, QSize, QMimeData
 
 import sys
 from constants import *
@@ -61,9 +62,13 @@ class CircuitGui(QMainWindow):
         toolsdock = self.ToolsPanel(self) 
 
         items_palette = toolsdock.add_section("Branch Elements")
-        add_capacitor = QPushButton("Add Capacitor")
+        add_capacitor = DragLabel("Add Capacitor", "capacitor")
+        add_inductor = DragLabel("Add Inductor", "inductor")
+        add_junction = DragLabel("Add Josephson Junction", "junction")
         #more items
         items_palette.addWidget(add_capacitor)
+        items_palette.addWidget(add_inductor)
+        items_palette.addWidget(add_junction)
 
         nodes_palette = toolsdock.add_section("Nodes")
         add_ground = QPushButton("Add Ground")
@@ -158,35 +163,20 @@ class CircuitGui(QMainWindow):
             section.addItem(spacer)
 
 
-    class PropertyEditor:
-
-        def __init__(self, gui):
-            self.gui = gui
-
-        def open(self, object):
-            
-            window = Toplevel()
-            frame = Frame(window)
-            textVars = []
-
-            for i,(name, field) in enumerate(object.properties.items()):
-                var = StringVar()
-                Entry(frame, textvariable = var).grid(row = i, column = 1)
-                Label(frame, text = name).grid(row = i, column = 0)
-                textVars.append(var)
-
-            frame.pack()
-
-            def cleanup():
-                window.destroy()
-                for name, text in zip(object.properties.keys(), textVars):
-                    object.properties[name] = float(text.get())
-
-                self.gui.canvas.redraw()
-
-            close_button = Button(window, text = "Done", command = cleanup)
-            close_button.pack()
-
+class DragLabel(QLabel):
+    def __init__(self, text, element):
+        super().__init__(text)
+        self.element = element
+    
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.MouseButton.LeftButton:
+            mime_data = QMimeData()
+            mime_data.setText(self.element)
+            drag = QDrag(self)
+            drag.setMimeData(mime_data)
+            drag.setPixmap(self.grab(self.rect()))
+            drag.exec(Qt.DropAction.MoveAction)
+            event.accept()
 
 if __name__ == '__main__':
 

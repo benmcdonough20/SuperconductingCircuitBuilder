@@ -45,7 +45,7 @@ class BranchElement(CanvasElement):
 
     def paint(self, painter):
         for i, prop in enumerate(self.properties):
-            painter.drawText(SPACING+self.x, int(self.y-SPACING-i*FONTSIZE*1.5), str(prop) + " = "+str(self.properties[prop]))
+            painter.drawText(int(SPACING+self.x), int(self.y-SPACING-i*FONTSIZE*1.5), str(prop) + " = "+str(self.properties[prop]))
         
         width = self.bbox.width
         height = self.bbox.height
@@ -83,7 +83,8 @@ class BranchElement(CanvasElement):
         rotatemat = QTransform() 
         rotatemat.rotate(self.rot* 90)
         self.icon = self.icon.transformed(rotatemat)
-        self.bbox = Bbox(self.icon.width(), self.icon.height())
+        w,h = self.bbox.width, self.bbox.height
+        self.bbox = Bbox(h,w) 
         
         
         for node in self.nodes:
