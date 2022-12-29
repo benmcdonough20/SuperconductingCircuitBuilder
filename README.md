@@ -17,6 +17,7 @@ the anchor points to guide the wires.
 
 ### Mouse
 * `Left Button Drag` on whitespace - pan
+* `Scroll Wheel' - zoom
 * `Left Button Drag` on element/selected group - move selection
 * `Right Button Drag` - box selection
 * `Left Button Click` on element - rotate
