@@ -31,7 +31,7 @@ the anchor points to guide the wires.
 * Undo / Redo
 * Save / Open
 * Export to scQubits circuit format
-* Import circuits from scQubits library
+* Import circuits representing scQubits objects
 
 ## Dependencies
 * Python 3.10.8
