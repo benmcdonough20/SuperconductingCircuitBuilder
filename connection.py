@@ -1,84 +1,102 @@
 from constants import *
 from canvas_element import CanvasElement
 from PyQt6.QtGui import QPen, QColorConstants
+import numpy as np
+from PyQt6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
+
+ROT_MAT = [[0,-1],[1,0]]
 
 class Connection(CanvasElement):
 
-    def __init__(self, origin, dest, d, canvas):
-        super().__init__(origin.x, origin.y, canvas)
+    def __init__(self, origin, dest, displacement, circuit):
+        super().__init__(origin)
         self.anchors = []
         self.wires = []
-        newwire = Wire(origin, dest, d)
-
-        orientation = 0
-        oy = round(origin.y/SPACING)
-        oy += d[1]
-
-        ox = round(origin.x/SPACING)
-        ox += d[0]
-
-        tx,ty = round(dest.x/SPACING), round(dest.y/SPACING)
-        if d[0]:
-            if (ox < tx and d[0] < 0) or (ox > tx and d[0] > 0):
-                orientation = 1 
-
-        elif d[1]:
-            if not ((oy < ty and d[1] < 0) or (oy > ty and d[1] > 0)):
-                orientation = 1
-
-        newwire.orientation = orientation
-        self.wires.append(newwire)
-
+        self.bbox = None
         self.origin = origin
         self.dest = dest
-        self.d = d
+        self.displacement = displacement
         self.links = []
-        self.canvas = canvas
+        self.circuit = circuit
         self.selected_anchor = None
         self.selected_wire = None
+        self.circuit.add_connection(self)
+        self.disps = []
+
+        self.wires.append(Wire(origin, dest, displacement))
             
     def paint(self, painter):
+        for anchor in self.anchors:
+            anchor.paint(painter)
         for wire in self.wires:
             wire.paint(painter)
 
+    def in_bbox(self, point):
         for anchor in self.anchors:
-            anchor.paint(painter)
-
-    def in_bbox(self, x, y):
-        for anchor in self.anchors:
-            if anchor.in_bbox(x,y):
+            if anchor.in_bbox(point):
                 self.selected_anchor = anchor
                 return True
         self.selected_anchor = None
         for wire in self.wires:
-            if wire.in_bbox(x,y):
+            if wire.in_bbox(point):
                 self.selected_wire = wire
                 return True
         self.selected_wire = None
         return False    
     
-    def press(self, x, y):
+    def press(self, point):
         if not self.selected_anchor:
-            newanchor = Anchor(round(x/SPACING)*SPACING, round(y/SPACING)*SPACING, self)
+            newanchor = Anchor(point.snaptogrid(), self.circuit, self)
             self.anchors.append(newanchor)
             self.selected_anchor = newanchor
-            newwire = Wire(newanchor, self.selected_wire.dest, [0,0])
-            newwire.orientation = self.selected_wire.orientation
+
+            self.wires.append(Wire(newanchor, self.selected_wire.dest, Point(0,0)))
             self.selected_wire.dest = newanchor
-            self.wires.append(newwire)
+            self.rewire()
 
     def rewire(self):
         for wire in self.wires:
             wire.rewire()
-    
-    def drag(self, x, y):
-        if self.selected_anchor:
-            self.selected_anchor.drag(x,y)
 
     def change_dest(self, newdest):
         self.dest = newdest
         self.wires[-1].dest = newdest
-        
+
+    def reorient(self):
+        wire = self.wires[0]
+        wire.d = wire.d * ROT_MAT
+        wire.rewire()
+
+    def remove_anchor(self, anchor):
+        head = None
+        tail = None
+        for wire in self.wires:
+            if wire.dest is anchor:
+                head = wire
+            if wire.origin is anchor:
+                tail = wire
+        self.anchors.remove(anchor)
+        self.circuit.remove_anchor(anchor)
+        self.wires.remove(tail)
+        head.dest = tail.dest
+    
+    class ConnectionMomento:
+        def __init__(self, connection):
+            self.dest = connection.dest.idx
+            self.anchors = []
+            wire = connection.wires[0]
+            while True: #add anchors in path order
+                if wire.dest in connection.anchors:
+                    self.anchors.append(Point(wire.dest.x, wire.dest.y))
+                for newwire in connection.wires:
+                    if newwire.origin is wire.dest:
+                        wire = newwire
+                        break
+                else:
+                    break
+                    
+            self.d = connection.wires[0].d
+
 
 class Wire(CanvasElement):
 
@@ -95,50 +113,37 @@ class Wire(CanvasElement):
         self.links.clear()
  
         oy = round(self.origin.y/SPACING)
-        oy += self.d[1]
+        oy += self.d.y
 
         ox = round(self.origin.x/SPACING)
-        ox += self.d[0]
+        ox += self.d.x
        
 
         tx,ty = round(self.dest.x/SPACING), round(self.dest.y/SPACING)
+
+        self.orientation = 0
+        if self.d.x:
+            if (ox < tx and self.d.x < 0) or (ox > tx and self.d.x > 0):
+                self.orientation = 1
+
+        elif self.d.y:
+            if not ((oy < ty and self.d.y < 0) or (oy > ty and self.d.y > 0)):
+                self.orientation = 1
+
         self.wire(ox, oy, tx, ty)
 
 
     def wire(self, ox, oy, tx, ty):
         
         def linkx(sy): 
-            if tx > ox:
-                for x in range(ox, tx):
-                    if (x*SPACING, sy*SPACING) == (self.origin.x, self.origin.y) and not self.d == [0,0]:
-                        for i in range(3):
-                            self.links.append(Link(x+i-1,sy-1))
-                    else:
-                        self.links.append(Link(x,sy))
-
-            else:
-                for x in range(ox, tx, -1):
-                    if (x*SPACING, sy*SPACING) == (self.origin.x, self.origin.y) and not self.d == [0,0]:
-                        for i in range(3):
-                            self.links.append(Link(x-i+1, sy+1))
-                    else:
-                        self.links.append(Link(x, sy))
-                        
+            disp = int(tx > ox)*2-1
+            for x in range(ox, tx, disp):
+                self.links.append(Link(x,sy))
 
         def linky(sx): 
-            if ty > oy:
-                for y in range(oy, ty):
-                    if (sx*SPACING, y*SPACING) == (self.origin.x, self.origin.y) and not self.d == [0,0]:
-                        for i in range(3):
-                            self.links.append(Link(sx-1,y+i-1))
-
-                    self.links.append(Link(sx,y))
-            else:
-                for y in range(oy, ty, -1):
-                    if (sx*SPACING, y*SPACING) == (self.origin.x, self.origin.y) and not self.d == [0,0]:
-                        for i in range(3):
-                            self.links.append(Link(sx-1,y+i-1))
-                    self.links.append(Link(sx, y))
+            disp = int(ty > oy)*2-1
+            for y in range(oy, ty, disp):
+                self.links.append(Link(sx,y))
 
         if self.orientation == 0:
             linkx(oy)
@@ -164,9 +169,9 @@ class Wire(CanvasElement):
             
         painter.drawLine(self.links[-1].x*SPACING, self.links[-1].y*SPACING, self.dest.x, self.dest.y)
 
-    def in_bbox(self, x, y):
+    def in_bbox(self, point):
         for link in self.links[1:]:
-            if link.in_bbox(x,y):
+            if link.in_bbox(point):
                 self.selected_link = link
                 return True
         return False
@@ -178,32 +183,45 @@ class Link:
         self.bbox = Bbox(SPACING, SPACING)
         self.y = y
     
-    def in_bbox(self, x, y):
+    def in_bbox(self, point):
         sx = self.x*SPACING
         sy = self.y*SPACING
-        if (x > sx-self.bbox.width/2 and x < sx + self.bbox.width/2 and y > sy-self.bbox.height/2 and y < sy+self.bbox.height/2):
+        if (point.x > sx-self.bbox.width/2 and point.x < sx + self.bbox.width/2 \
+            and point.y > sy-self.bbox.height/2 and point.y < sy+self.bbox.height/2):
             return self
         return None
-
-    def paint(self, painter):
-        painter.drawPoint(self.x*SPACING, self.y*SPACING)
 
 
 class Anchor(CanvasElement):
 
     layer = 1
 
-    def __init__(self,x,y,connection):
+    def __init__(self, point, circuit, connection):
+        super().__init__(point)
+        circuit.add_anchor(self)
         self.connection = connection
-        self.bbox = Bbox(SPACING, SPACING)
-        self.x = x
-        self.y = y
 
     def paint(self, painter):
         painter.setPen(QPen(QColorConstants.Black, 1))
         painter.drawEllipse(self.x-5, self.y-5, 10,10)
 
-    def in_bbox(self, x, y):
-        if super().in_bbox(x,y):
+    def in_bbox(self, point):
+        if super().in_bbox(point):
             return self
         return None
+    
+    def delete(self):
+        self.connection.remove_anchor(self)
+
+    def toolbar(self, update):
+        toolbar = QToolBar()
+        split = QPushButton("Delete")
+        def deleteandupdate():
+            self.delete()
+            update()
+        split.clicked.connect(deleteandupdate)
+        toolbar.addWidget(split)
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
+        toolbar.addWidget(spacer)
+        return toolbar

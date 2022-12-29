@@ -1,17 +1,14 @@
 from constants import *
 from PyQt6.QtGui import QColorConstants, QPen
+from PyQt6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
 
 class CanvasElement:
     
-    def __init__(self, x, y, canvas):
-        self.x = x #int specifying x position on grid
-        self.y = y #int specigying y position on grid
+    def __init__(self, point):
+        self.x = point.x #int specifying x position on grid
+        self.y = point.y #int specigying y position on grid
         self.rot = 0 #four different orientations
         self.bbox = Bbox(SPACING, SPACING)
-        self.clickable = False
-        self.width = SPACING
-        self.canvas = canvas
-        canvas.add_object(self)
 
     def paint(self, painter):
         color = QColorConstants.Black
@@ -24,19 +21,20 @@ class CanvasElement:
     def rotate(self):
         self.rot = (self.rot+1)%4
 
-    def in_bbox(self, x, y):
+    def in_bbox(self, point):
         if not self.bbox:
-            return None
-        if (x > self.x-self.bbox.width/2 and x < self.x + self.bbox.width/2 and y > self.y-self.bbox.height/2 and y < self.y+self.bbox.height/2):
-            return self
-        return None
+            return False
+        if (point.x > self.x-self.bbox.width/2 and point.x < self.x + self.bbox.width/2 \
+            and point.y > self.y-self.bbox.height/2 and point.y < self.y+self.bbox.height/2):
+            return True
+        return False
 
-    def drag(self, x, y):
-        self.x = SPACING*round(x/SPACING)
-        self.y = SPACING*round(y/SPACING)
+    def drag(self, point):
+        self.x = point.snaptogrid().x
+        self.y = point.snaptogrid().y
     
-    def press(self, x, y):
+    def press(self, point):
         pass
     
-    def drop(self, x, y, other):
+    def drop(self, point, other):
         pass

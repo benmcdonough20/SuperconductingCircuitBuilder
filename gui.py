@@ -1,172 +1,233 @@
-from tkinter import Tk, Frame, mainloop, Toplevel, StringVar
-from tkinter.ttk import Button, Label, Entry
-
 from PyQt6.QtWidgets import (
     QMainWindow, 
     QApplication, 
-    QGraphicsView, 
     QSpacerItem,
     QSizePolicy,
     QToolBar, 
     QDockWidget,
     QWidget,
     QVBoxLayout,
-    QPushButton,
-    QToolBox,
     QLabel,
+    QFileDialog,
+    QPushButton
 )
-from PyQt6.QtGui import QAction, QDrag 
-from PyQt6.QtCore import Qt, QSize, QMimeData
+import pickle
+from PyQt6.QtGui import QAction, QDrag , QIcon
+from PyQt6.QtCore import Qt, QMimeData
+
+from pathlib import Path
 
 import sys
 from constants import *
-from node import Ground
-from connection import Anchor
-from canvas import SmartCanvas
-from branch_element import Capacitor, JosephsonJunction, Inductor, BranchElement 
+from canvas import SmartCanvas, ObjectFactory
 from circuit import Circuit
+from caretaker import Caretaker 
 
-MINSIZE = QSize(800,600)
 
 class CircuitGui(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.circuit = Circuit()
         self.initUI()
 
     def initUI(self):
         self.setWindowTitle("Circuit Builder")
         self.setMinimumSize(MINSIZE)
 
-        canvas = SmartCanvas()
+        self.canvas = SmartCanvas(self)
 
+        self.init_toolbox()
         self.init_menu()
         self.init_toolbar()
-        self.init_toolbox()
 
-        self.setCentralWidget(canvas)
+        self.caretaker = Caretaker()
+        self.take_snapshot()
+
+        self.setCentralWidget(self.canvas)
         self.show()
 
-    def init_toolbar(self):
-        toolbar = QToolBar()
-        undo = QAction("Undo", toolbar)
-        redo = QAction("Redo", toolbar)
-
-        toolbar.addAction(undo)
-        toolbar.addAction(redo)
-
-        self.addToolBar(toolbar)
-    
     def init_toolbox(self):
-        toolsdock = self.ToolsPanel(self) 
+        self.toolsdock = ToolDock(self.import_circuit)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.toolsdock) 
 
-        items_palette = toolsdock.add_section("Branch Elements")
-        add_capacitor = DragLabel("Add Capacitor", "capacitor")
-        add_inductor = DragLabel("Add Inductor", "inductor")
-        add_junction = DragLabel("Add Josephson Junction", "junction")
-        #more items
-        items_palette.addWidget(add_capacitor)
-        items_palette.addWidget(add_inductor)
-        items_palette.addWidget(add_junction)
+    def init_toolbar(self):
+        self.toolbar = QToolBar(self)
 
-        nodes_palette = toolsdock.add_section("Nodes")
-        add_ground = QPushButton("Add Ground")
-        nodes_palette.addWidget(add_ground)
+        undo = QAction("", self)
+        undo.setIcon(QIcon("./icons/undo"))
+        self.toolbar.addAction(undo)
+        undo.triggered.connect(self.undo)
 
-        circuits_palette = toolsdock.add_section("Circuits")
-        transmon = QPushButton("Transmon")
-        #more circuits
-        circuits_palette.addWidget(transmon)
+        redo = QAction("", self)
+        redo.setIcon(QIcon("./icons/redo"))
+        self.toolbar.addAction(redo)
+        redo.triggered.connect(self.redo)
 
-        toolsdock.squash(items_palette)
-        toolsdock.squash(circuits_palette)
-        toolsdock.squash(nodes_palette)
-
-        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, toolsdock) 
+        clear = QAction("", self)
+        clear.setIcon(QIcon("./icons/clear"))
+        self.toolbar.addAction(clear)
+        clear.triggered.connect(self.canvas.clear)
+        
+        self.addToolBar(self.toolbar) 
     
     def init_menu(self):
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu('&File')
-        edit_menu = menu_bar.addMenu('&Edit')
-        help_menu = menu_bar.addMenu('&Help')
+        save_file = QAction("Save", self)
+        file_menu.addAction(save_file)
+        save_file.triggered.connect(self.save_dialogue)
 
-    def export(self):
-        print("--------")
-        for element in self.branch_elements:
-            print(element)
+        open_file = QAction("Open", self)
+        file_menu.addAction(open_file)
+        open_file.triggered.connect(self.open_dialogue)
 
-    def edit_mode(self):
-        self.canvas.state.edit()
+        export_circuit = QAction("Export", self)
+        file_menu.addAction(export_circuit)
+        export_circuit.triggered.connect(self.export)
 
-    def delete_mode(self):
-        self.canvas.state.delete()
+        import_circuit = QAction("Import", self)
+        file_menu.addAction(import_circuit)
+        import_circuit.triggered.connect(self.import_dialogue)
+        
 
-    def edit(self, object):
-        self.buttons_pane.editor.open(object)
+        toolbar_menu = menu_bar.addMenu('&Tools')
 
-    def add_branch_element(self, element):
-        self.branch_elements.append(element)
-        for node in element.nodes:
-            self.add_node(node)
+        show_toolbox = QAction("Dock Toolbox", self)
+        show_toolbox.triggered.connect(self.toolsdock.redock)
 
-    def delete(self, object):
-        if issubclass(type(object), BranchElement):
-            self.delete_branch_element(object)
-        elif type(object) == Anchor:
-            object.delete()
-            
-    def delete_branch_element(self, element):
-        self.branch_elements.remove(element)
-        self.canvas.toplayer.remove(element)
-        for node in element.nodes:
-            if len(node.elements) == 1:
-                self.nodes.remove(node)
-                self.canvas.toplayer.remove(node)
-            else:
-                node.elements.remove(element)
-        for connection in element.connections:
-            self.canvas.bottomlayer.remove(connection)
-        self.canvas.redraw()
+        toolbar_menu.addAction(show_toolbox)
 
-    def remove_node(self, node):
-        self.nodes.remove(node)
-        for i,node in enumerate(self.nodes):
-            node.idx = i+1
-
-    def add_node(self, node):
-        node.idx = len(self.nodes)+1
-        self.nodes.append(node)
-
-    def add_ground(self, node):
-        self.grounds.append(node)
+    def save(self, fname):
+        with open(fname, "wb") as savefile:
+            save = Circuit.CircuitMemento(self.canvas.objects)
+            pickle.dump(save, savefile)
     
+    def open(self, fname):
+        with open(fname, "rb") as openfile:
+            saved = pickle.load(openfile)
+            self.canvas.restore(saved)
 
-    class ToolsPanel(QDockWidget):
-        
-        def __init__(self, *args, **kwargs):
+    def take_snapshot(self):
+        self.caretaker.add_snapshot(Circuit.CircuitMemento(self.canvas.objects))
 
-            super().__init__(*args, **kwargs)
+    def redo(self):
+        snapshot = self.caretaker.redo()
+        self.canvas.restore(snapshot)
+    
+    def undo(self):
+        snapshot = self.caretaker.undo()
+        self.canvas.restore(snapshot)
 
-            self.toolbox = QToolBox(self)
-            self.setWidget(self.toolbox)
-        
-        def add_section(self,name):
-            section = QWidget(self.toolbox)
-            layout = QVBoxLayout()
-            section.setLayout(layout)
-            self.toolbox.addItem(section, name)
-            return layout
-        
-        def squash(self, section):
-            spacer = QSpacerItem(0,0,QSizePolicy.Policy.Ignored, QSizePolicy.Policy.MinimumExpanding)
-            section.addItem(spacer)
+    def save_dialogue(self):
+        fname,_ = QFileDialog.getSaveFileName(
+                self,
+                "Save File",
+                "./",
+                "Circuits (*.circuit)",
+            )
+        self.save(fname+".circuit")
+    
+    def open_dialogue(self):
+        fname,_ = QFileDialog.getOpenFileName(
+                self,
+                "Open File",
+                "./",
+                "Circuits (*.circuit)"
+            )
+        self.open(fname)
+    
+    def export(self):
+        fname,_ = QFileDialog.getSaveFileName(
+                self,
+                "Save File",
+                "./",
+                "ScQubits circuit (*.yml)",
+            )
+        with open(fname+".yml", "w") as f:
+            f.write(str(self.canvas.objects))
+
+    def import_dialogue(self):
+        fname,_ = QFileDialog.getOpenFileName(
+                self,
+                "Import File",
+                "./",
+                "Circuits (*.circuit)"
+            )
+        self.import_circuit(fname)
+     
+    def import_circuit(self, fname):
+        with open(fname, "rb") as openfile:
+            saved = pickle.load(openfile)
+            new_circuit = Circuit()
+            new_circuit.load(saved)
+            self.canvas.import_circuit(new_circuit)
+            self.take_snapshot()
+
+class ToolDock(QDockWidget):
+    
+    def __init__(self, import_circuit):
+        super().__init__()
+        toolbox = QWidget()
+        self._layout = QVBoxLayout()
+        toolbox.setLayout(self._layout)
+        self.setWidget(toolbox)
+
+        self._elements()
+        self._nodes()
+        self._circuits(import_circuit)
+
+        self._layout.addSpacerItem(QSpacerItem(
+            0,
+            0,
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.MinimumExpanding
+        ))
+    
+    def _elements(self):
+        section_label = QLabel("Branch Elements")
+        add_capacitor = DragLabel("Add Capacitor", ObjectFactory.capacitor, "./capacitor.svg")
+        add_inductor = DragLabel("Add Inductor", ObjectFactory.inductor, "./Inductor.svg")
+        add_junction = DragLabel("Add Josephson Junction", ObjectFactory.junction, "./JJ.svg")
+        self._layout.addWidget(section_label)
+        self._layout.addWidget(add_capacitor)
+        self._layout.addWidget(add_inductor)
+        self._layout.addWidget(add_junction)
+
+    def _nodes(self):
+        section_label = QLabel("Nodes")
+        add_ground = DragLabel("Add Ground", ObjectFactory.ground, "./ground.svg")
+        self._layout.addWidget(section_label)
+        self._layout.addWidget(add_ground)
+
+    def _circuits(self, import_circuit):
+        section_label = QLabel("Circuits")
+        self._layout.addWidget(section_label)
+        circuits_dir = Path("./Circuits")
+        for entry in circuits_dir.iterdir():
+            add_circuit = QPushButton(entry.stem)
+            add_circuit.clicked.connect(CircuitImport(entry.name, import_circuit))
+            self._layout.addWidget(add_circuit)
+                    
+    
+    def redock(self):
+        self.setFloating(False)
+        self.show()
+
+class CircuitImport:
+    def __init__(self, name, update):
+        self.name = name
+        self.update = update
+    
+    def __call__(self):
+        self.update("./Circuits/"+self.name)
 
 
 class DragLabel(QLabel):
-    def __init__(self, text, element):
+    def __init__(self, text, element, icon_path):
         super().__init__(text)
         self.element = element
+        self.icon = QIcon(icon_path).pixmap(ICON_SIZE,ICON_SIZE)
+        self.setPixmap(self.icon)
+        self.setMaximumWidth(ICON_SIZE)
     
     def mouseMoveEvent(self, event):
         if event.buttons() == Qt.MouseButton.LeftButton:
@@ -174,12 +235,11 @@ class DragLabel(QLabel):
             mime_data.setText(self.element)
             drag = QDrag(self)
             drag.setMimeData(mime_data)
-            drag.setPixmap(self.grab(self.rect()))
+            drag.setPixmap(self.icon)
             drag.exec(Qt.DropAction.MoveAction)
             event.accept()
 
 if __name__ == '__main__':
-
     app = QApplication(sys.argv)
     gui = CircuitGui()
     app.exec()
