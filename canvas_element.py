@@ -1,6 +1,5 @@
 from constants import *
 from PyQt6.QtGui import QColorConstants, QPen
-from PyQt6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
 
 class CanvasElement:
     

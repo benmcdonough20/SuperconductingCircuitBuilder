@@ -4,7 +4,6 @@ from PyQt6.QtGui import QPen, QColorConstants
 import numpy as np
 from PyQt6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
 
-ROT_MAT = [[0,-1],[1,0]]
 
 class Connection(CanvasElement):
 
