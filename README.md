@@ -37,5 +37,8 @@ the anchor points to guide the wires.
 * Python 3.10.8
 * PyQt 6.4.0
 
-
+## Know issues
+There are still many bugs!
+* Right click has no activation distance, so using a mouse will result in some dropped right clicks
+* Sometime import/undo/redo crashes, but it usually seems to work 
 
