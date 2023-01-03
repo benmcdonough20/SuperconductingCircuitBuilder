@@ -9,11 +9,13 @@ class Point:
         self.y = y
 
     def __mul__(self, other):
-        if type(other) is list:
+        if type(other) is list or type(other) is np.ndarray:
             x,y = np.array([self.x, self.y]) @ other
             return Point(x,y)
         elif type(other) is int or type(other) is float:
             return Point(self.x*other, self.y*other)
+        else:
+            raise Exception("Type", str(type(other)))
         
     def __rmul__(self, other):
         return self.__mul__(other)
@@ -30,7 +32,7 @@ class Point:
 SPACING =  50
 BGCOLOR = QColorConstants.White
 NODE_SIZE = 6
-ZOOM_SPEED = .1
+ZOOM_SPEED = .001
 POINT_SIZE = 4
 WIRE_SIZE = 3
 MAX_ZOOM = 5
@@ -40,7 +42,7 @@ DEFAULT_HEIGHT = 600
 FONTSIZE = 10
 IMG_RES_FACTOR = 5
 ICON_SIZE = 100
-MINSIZE = QSize(800,600)
+MINSIZE = QSize(1000,600)
 ORIGIN = Point(0,0)
 DROP_DISPLACEMENT = Point(50,25)
 ROT_MAT = [[0,-1],[1,0]]

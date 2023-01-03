@@ -66,8 +66,9 @@ class Node(CanvasElement):
                     if connection.dest is self:
                         displacement = connection.displacement
                         conn = connection
-                newnode = Node(Point(element.x, element.y)+displacement*SPACING*matrix_power(element.rot, ROT_MAT), self.circuit)
+                newnode = Node(Point(element.x, element.y)+displacement*SPACING*matrix_power(ROT_MAT, element.rot), self.circuit)
                 newnode.elements.append(element)
+                newnode.connections.append(conn)
                 conn.change_dest(newnode)
                 for i,node in enumerate(element.nodes):
                     if node is self: 

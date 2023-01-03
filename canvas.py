@@ -49,10 +49,10 @@ class SmartCanvas(QFrame):
         direction = 0
         if event.angleDelta().y() > 0:
             if MAX_ZOOM > self._zoom_factor:
-                direction = 1
+                direction = event.angleDelta().y()
         else:
             if MIN_ZOOM < self._zoom_factor:
-                direction = -1
+                direction = event.angleDelta().y()
 
         #zoom on mouse pointer
         center_on = self.world_point(event)
@@ -271,8 +271,11 @@ class SmartCanvas(QFrame):
                     self.object_toolbar = None
                     self.selected_group.clear()
                 self.gui.take_snapshot()
-            self.object_toolbar = object.toolbar(update_and_check)
-            self.gui.addToolBar(self.object_toolbar)
+            try:
+                self.object_toolbar = object.toolbar(update_and_check)
+                self.gui.addToolBar(self.object_toolbar)
+            except:
+                pass
           
     def dragEnterEvent(self, event) -> None:
         event.accept()

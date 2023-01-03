@@ -47,7 +47,7 @@ class CircuitGui(QMainWindow):
         self.show()
 
     def init_toolbox(self):
-        self.toolsdock = ToolDock(self.import_circuit)
+        self.toolsdock = ToolDock(self.import_circuit, self.export)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.toolsdock) 
 
     def init_toolbar(self):
@@ -81,11 +81,11 @@ class CircuitGui(QMainWindow):
         file_menu.addAction(open_file)
         open_file.triggered.connect(self.open_dialogue)
 
-        export_circuit = QAction("Export", self)
+        export_circuit = QAction("Export to scQubits", self)
         file_menu.addAction(export_circuit)
         export_circuit.triggered.connect(self.export)
 
-        import_circuit = QAction("Import", self)
+        import_circuit = QAction("Import circuit", self)
         file_menu.addAction(import_circuit)
         import_circuit.triggered.connect(self.import_dialogue)
         
@@ -165,7 +165,7 @@ class CircuitGui(QMainWindow):
 
 class ToolDock(QDockWidget):
     
-    def __init__(self, import_circuit):
+    def __init__(self, import_circuit, export_circuit):
         super().__init__()
         toolbox = QWidget()
         self._layout = QVBoxLayout()
@@ -175,6 +175,7 @@ class ToolDock(QDockWidget):
         self._elements()
         self._nodes()
         self._circuits(import_circuit)
+        self._gui_options(export_circuit)
 
         self._layout.addSpacerItem(QSpacerItem(
             0,
@@ -206,7 +207,16 @@ class ToolDock(QDockWidget):
             add_circuit = QPushButton(entry.stem)
             add_circuit.clicked.connect(CircuitImport(entry.name, import_circuit))
             self._layout.addWidget(add_circuit)
-                    
+    
+    def _gui_options(self, export):
+        section_label = QLabel("Gui Options")
+        self._layout.addWidget(section_label)
+        show_toolbox = QPushButton("Dock Toolbox", self)
+        show_toolbox.clicked.connect(self.redock)
+        self._layout.addWidget(show_toolbox)
+        export_button = QPushButton("Export to scQubits", self)
+        export_button.clicked.connect(export)
+        self._layout.addWidget(export_button)
     
     def redock(self):
         self.setFloating(False)
