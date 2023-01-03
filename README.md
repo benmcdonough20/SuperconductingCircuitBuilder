@@ -1,6 +1,10 @@
 # CircuitBuilder
 This is a GUI for designing superconducting circuits intended to accompany the python package scQubits.
 
+## Installation
+* git clone https://github.com/benmcdonough20/CircuitBuilder.git
+* pip install pyqt6
+
 ## Usage
 Start wih `python gui.py`. The elements used to build a circuit are
 1) Capacitor
@@ -37,6 +41,7 @@ the anchor points to guide the wires.
 ## Dependencies
 * Python 3.10.8
 * PyQt 6.4.0
+* Numpy 1.22.4
 
 ## Know issues
 There are still many bugs!
