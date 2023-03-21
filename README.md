@@ -1,4 +1,4 @@
-# CircuitBuilder
+# Superconducting Circuit Builder
 This is a GUI for designing superconducting circuits intended to accompany the Python package scQubits.
 
 ## Installation
