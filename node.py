@@ -1,9 +1,9 @@
 from canvas_element import CanvasElement
 from constants import *
 from math import sin, cos, pi
-from PyQt6.QtGui import QPen, QColorConstants
-from PyQt6.QtCore import QPoint
-from PyQt6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
+from PySide2.QtGui import QPen, QColorConstants, QPolygon
+from PySide2.QtCore import QPoint
+from PySide2.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
 from numpy.linalg import matrix_power
 
 GROUND_RAD = .3*SPACING
@@ -22,6 +22,8 @@ class Node(CanvasElement):
         self.circuit.add_node(self)
 
     def drop(self, point, other):
+        if not issubclass(type(other), Node):
+            return
         self.circuit.remove_node(self)
         other.connections += self.connections
         other.elements += self.elements
@@ -66,6 +68,7 @@ class Node(CanvasElement):
                     if connection.dest is self:
                         displacement = connection.displacement
                         conn = connection
+                conn.anchors.clear()
                 newnode = Node(Point(element.x, element.y)+displacement*SPACING*matrix_power(ROT_MAT, element.rot), self.circuit)
                 newnode.elements.append(element)
                 newnode.connections.append(conn)
@@ -99,7 +102,7 @@ class Ground(Node):
         p2 = QPoint(int(self.x+GROUND_RAD*sin(self.rot*pi/2)), int(self.y+GROUND_RAD*cos(self.rot*pi/2)))
         p3 = QPoint(int(self.x-GROUND_RAD*cos(self.rot*pi/2)), int(self.y-GROUND_RAD*sin(self.rot*pi/2)))
 
-        painter.drawPolygon(p1,p2,p3)
+        painter.drawPolygon(QPolygon([p1,p2,p3]))
 
     def delete(self):
         self.circuit.remove_ground(self)

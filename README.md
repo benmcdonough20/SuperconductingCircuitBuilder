@@ -1,12 +1,12 @@
 # CircuitBuilder
-This is a GUI for designing superconducting circuits intended to accompany the python package scQubits.
+This is a GUI for designing superconducting circuits intended to accompany the Python package scQubits.
 
 ## Installation
 * git clone https://github.com/benmcdonough20/CircuitBuilder.git
-* pip install pyqt6
+* pip install pyside2
 
 ## Usage
-Start wih `python gui.py`. The elements used to build a circuit are
+Start by running `python circuitbuilder.py`. The elements used to build a circuit are
 1) Capacitor
 2) Inductor
 3) Josephson Junction
@@ -27,24 +27,23 @@ the anchor points to guide the wires.
 * `Left Button Click` on element - rotate
 * `Right Button Click` on element - select and show properties
 
-![Screenshot indicating usage](./screenshot.png "screenshot")
+![Screenshot showing usage](./demo/screenshot.png "screenshot")
 
 ## Features
-* Split nodes
+* Split (reverse-join) nodes
 * Delete elements
 * Wire anchor points
 * Undo / Redo
 * Save / Open
 * Export to scQubits circuit format
-* Import circuits representing scQubits objects
+* Pre-made circuit library
 
 ## Dependencies
 * Python 3.10.8
-* PyQt 6.4.0
+* PySide2 5.15.8
 * Numpy 1.22.4
 
-## Know issues
+## Known issues
 There are still many bugs!
 * Right click has no activation distance, so using a mouse will result in some dropped right clicks
-* Sometime import/undo/redo crashes, but it usually seems to work 
-
+* Sometime import/undo/redo (the memento-based functionalities) crash, but usually they seem to work 

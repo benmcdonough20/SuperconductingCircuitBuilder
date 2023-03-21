@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import (
+from PySide2.QtWidgets import (
     QMainWindow, 
     QApplication, 
+    QAction,
     QSpacerItem,
     QSizePolicy,
     QToolBar, 
@@ -12,8 +13,8 @@ from PyQt6.QtWidgets import (
     QPushButton
 )
 import pickle
-from PyQt6.QtGui import QAction, QDrag , QIcon
-from PyQt6.QtCore import Qt, QMimeData
+from PySide2.QtGui import QDrag , QIcon
+from PySide2.QtCore import Qt, QMimeData
 
 from pathlib import Path
 
@@ -24,7 +25,7 @@ from circuit import Circuit
 from caretaker import Caretaker 
 
 
-class CircuitGui(QMainWindow):
+class CircuitBuilder(QMainWindow):
 
     def __init__(self):
         super().__init__()
@@ -123,7 +124,7 @@ class CircuitGui(QMainWindow):
                 self,
                 "Save File",
                 "./",
-                "Circuits (*.circuit)",
+                "circuits (*.circuit)",
             )
         self.save(fname+".circuit")
     
@@ -132,7 +133,7 @@ class CircuitGui(QMainWindow):
                 self,
                 "Open File",
                 "./",
-                "Circuits (*.circuit)"
+                "circuits (*.circuit)"
             )
         self.open(fname)
     
@@ -151,7 +152,7 @@ class CircuitGui(QMainWindow):
                 self,
                 "Import File",
                 "./",
-                "Circuits (*.circuit)"
+                "circuits (*.circuit)"
             )
         self.import_circuit(fname)
      
@@ -185,9 +186,9 @@ class ToolDock(QDockWidget):
     
     def _elements(self):
         section_label = QLabel("Branch Elements")
-        add_capacitor = DragLabel("Add Capacitor", ObjectFactory.capacitor, "./capacitor.svg")
-        add_inductor = DragLabel("Add Inductor", ObjectFactory.inductor, "./Inductor.svg")
-        add_junction = DragLabel("Add Josephson Junction", ObjectFactory.junction, "./JJ.svg")
+        add_capacitor = DragLabel("Add Capacitor", ObjectFactory.capacitor, "./elements/capacitor.svg")
+        add_inductor = DragLabel("Add Inductor", ObjectFactory.inductor, "./elements/Inductor.svg")
+        add_junction = DragLabel("Add Josephson Junction", ObjectFactory.junction, "./elements/JJ.svg")
         self._layout.addWidget(section_label)
         self._layout.addWidget(add_capacitor)
         self._layout.addWidget(add_inductor)
@@ -195,14 +196,14 @@ class ToolDock(QDockWidget):
 
     def _nodes(self):
         section_label = QLabel("Nodes")
-        add_ground = DragLabel("Add Ground", ObjectFactory.ground, "./ground.svg")
+        add_ground = DragLabel("Add Ground", ObjectFactory.ground, "./elements/ground.svg")
         self._layout.addWidget(section_label)
         self._layout.addWidget(add_ground)
 
     def _circuits(self, import_circuit):
-        section_label = QLabel("Circuits")
+        section_label = QLabel("circuits")
         self._layout.addWidget(section_label)
-        circuits_dir = Path("./Circuits")
+        circuits_dir = Path("./circuits")
         for entry in circuits_dir.iterdir():
             add_circuit = QPushButton(entry.stem)
             add_circuit.clicked.connect(CircuitImport(entry.name, import_circuit))
@@ -228,7 +229,7 @@ class CircuitImport:
         self.update = update
     
     def __call__(self):
-        self.update("./Circuits/"+self.name)
+        self.update("./circuits/"+self.name)
 
 
 class DragLabel(QLabel):
@@ -246,10 +247,10 @@ class DragLabel(QLabel):
             drag = QDrag(self)
             drag.setMimeData(mime_data)
             drag.setPixmap(self.icon)
-            drag.exec(Qt.DropAction.MoveAction)
+            drag.exec_(Qt.DropAction.MoveAction)
             event.accept()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    gui = CircuitGui()
-    app.exec()
+    gui = CircuitBuilder()
+    app.exec_()

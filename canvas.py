@@ -1,12 +1,11 @@
-from PyQt6.QtWidgets import QFrame, QApplication
-from PyQt6.QtGui import QColorConstants, QTransform, QPen, QPainter, QBrush, QAction, QIcon
-from PyQt6.QtCore import Qt
+from PySide2.QtWidgets import QFrame, QApplication, QAction
+from PySide2.QtGui import QColorConstants, QTransform, QPen, QPainter, QBrush, QIcon
+from PySide2.QtCore import Qt
 
 from circuit import Circuit
 from constants import *
 from node import Ground
 from branch_element import Capacitor, Inductor, JosephsonJunction, BranchElement
-from connection import Anchor
 
 
 class SmartCanvas(QFrame):
@@ -43,7 +42,7 @@ class SmartCanvas(QFrame):
         self.delete.triggered.connect(self.delete_selected)
     
     def world_point(self, event):
-        return self.map(Point(event.position().x(), event.position().y()))
+        return self.map(Point(event.pos().x(), event.pos().y()))
 
     def wheelEvent(self, event): #wheel scroll
         direction = 0
@@ -158,7 +157,7 @@ class SmartCanvas(QFrame):
 
     def _pan(self, event):
         #get mouse displacement in world coordinates
-        displacement = Point(event.position().x(), event.position().y()) - self._displacement
+        displacement = Point(event.pos().x(), event.pos().y()) - self._displacement
 
         #scale displacement relative to coordinate scaling and translate
         self._transform.translate(displacement.x/self._zoom_factor, displacement.y/self._zoom_factor)
@@ -166,7 +165,7 @@ class SmartCanvas(QFrame):
         self._displacement += displacement
         
     def mousePressEvent(self, event) -> None:
-        self._displacement = Point(event.position().x(), event.position().y())
+        self._displacement = Point(event.pos().x(), event.pos().y())
         mouseloc = self.world_point(event) 
         if event.buttons() == Qt.MouseButton.LeftButton: #select object under mouse
             self.leftButtonPress(mouseloc)
@@ -230,8 +229,6 @@ class SmartCanvas(QFrame):
         for object in self.selected_group:
             if issubclass(type(object), BranchElement): 
                 self.objects.remove_element(object)
-            elif type(object) is Anchor:
-                self.objects.remove_anchor(object)
         self.gui.take_snapshot()
         self.selected_group.clear()
         self.load_options()

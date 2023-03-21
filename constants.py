@@ -1,6 +1,6 @@
 from collections import namedtuple
-from PyQt6.QtCore import QSize 
-from PyQt6.QtGui import QColorConstants
+from PySide2.QtCore import QSize 
+from PySide2.QtGui import QColorConstants
 import numpy as np
 
 class Point:
@@ -44,9 +44,7 @@ IMG_RES_FACTOR = 5
 ICON_SIZE = 100
 MINSIZE = QSize(1000,600)
 ORIGIN = Point(0,0)
-DROP_DISPLACEMENT = Point(50,25)
+DROP_DISPLACEMENT = Point(50,50)
 ROT_MAT = [[0,-1],[1,0]]
 
 Bbox = namedtuple("Bbox", ("width", "height"))
-
-

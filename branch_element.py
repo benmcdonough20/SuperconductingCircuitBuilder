@@ -3,10 +3,17 @@ from canvas_element import CanvasElement
 from node import Node, Ground
 from connection import Connection
 import numpy as np
-from PyQt6.QtGui import QIcon, QTransform, QPen, QColorConstants, QAction
-from PyQt6.QtWidgets import QToolBar, QWidget, QLabel, QLineEdit, QHBoxLayout, QSpacerItem, QSizePolicy, QPushButton
-from math import pi
-from numpy.linalg import matrix_power
+from PySide2.QtGui import QIcon, QTransform, QPen, QColorConstants
+from PySide2.QtWidgets import (
+    QToolBar, 
+    QWidget, 
+    QLabel, 
+    QLineEdit, 
+    QHBoxLayout, 
+    QSpacerItem, 
+    QSizePolicy, 
+    QAction
+)
 
 class BranchElement(CanvasElement):
 
@@ -119,7 +126,6 @@ class BranchElement(CanvasElement):
     def delete(self):
         self.circuit.remove_element(self)
 
-
     class ElementMomento:
         def __init__(self, element):
             self.nodes = []
@@ -146,7 +152,7 @@ class Capacitor(BranchElement):
         self.name = "C"
         self.C = .02
         self.properties["C"] = self.C
-        self.icon_path = "./capacitor.svg"
+        self.icon_path = "./elements/capacitor.svg"
         self.setIcon(self.icon_path, SPACING, SPACING)
 
 
@@ -160,7 +166,7 @@ class JosephsonJunction(BranchElement):
         self.EC = 1.2
         self.properties["EC"] = self.EC
         self.properties["EJ"] = self.EJ
-        self.icon_path = "./JJ.svg"
+        self.icon_path = "./elements/JJ.svg"
         self.setIcon(self.icon_path, SPACING, SPACING)
 
 class Inductor(BranchElement):
@@ -170,7 +176,7 @@ class Inductor(BranchElement):
         self.name = "L"
         self.L = 1.2
         self.properties["L"] = self.L
-        self.icon_path = "./Inductor.svg"
+        self.icon_path = "./elements/Inductor.svg"
         self.setIcon(self.icon_path, SPACING, SPACING)
 
 class PropEdit(QWidget):
@@ -185,7 +191,7 @@ class PropEdit(QWidget):
         layout = QHBoxLayout()
         self.setLayout(layout)
         layout.addWidget(QLabel(self.key))
-        propedit =QLineEdit(str(self.properties[self.key]))
+        propedit = QLineEdit(str(self.properties[self.key]))
         propedit.setMaximumWidth(70)
         propedit.editingFinished.connect(self.update)
         def textchange(text):

@@ -1,11 +1,11 @@
 from constants import *
-from PyQt6.QtGui import QColorConstants, QPen
+from PySide2.QtGui import QColorConstants, QPen
 
 class CanvasElement:
     
     def __init__(self, point):
         self.x = point.x #int specifying x position on grid
-        self.y = point.y #int specigying y position on grid
+        self.y = point.y #int specifying y position on grid
         self.rot = 0 #four different orientations
         self.bbox = Bbox(SPACING, SPACING)
 
