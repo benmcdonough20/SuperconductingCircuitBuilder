@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QFrame, QApplication
-from PySide6.QtGui import QColorConstants, QTransform, QPen, QPainter, QBrush, QIcon, QAction
+from PySide6.QtGui import QColorConstants, QTransform, QPen, QPainter, QBrush, QIcon, QAction, QNativeGestureEvent, QInputDevice
 from PySide6.QtCore import Qt
 
 from circuit import Circuit
@@ -44,14 +44,31 @@ class SmartCanvas(QFrame):
     def world_point(self, event):
         return self.map(Point(event.pos().x(), event.pos().y()))
 
-    def wheelEvent(self, event): #wheel scroll
+    def wheelEvent(self, event): #wheel scroll #for windows?
+        if event.device().type() == QInputDevice.DeviceType.TouchPad:
+            self._transform.translate(event.pixelDelta().x(), event.pixelDelta().y())
+        else:
+            self._zoomEvent(event.angleDelta().y(), event)
+        self.update()
+
+    def event(self, event):
+        if isinstance(event, QNativeGestureEvent):
+            print(event.gestureType())
+            if isinstance(event, QNativeGestureEvent) and event.gestureType() == Qt.NativeGestureType.ZoomNativeGesture:
+                return self._zoomEvent(event.value()*1000, event)
+        return super().event(event)
+
+    def zoomNativeEvent(self, event): #MacOS compatibility
+        self._zoomEvent(event.value(), event)
+    
+    def _zoomEvent(self, value, event):
         direction = 0
-        if event.angleDelta().y() > 0:
+        if value > 0:
             if MAX_ZOOM > self._zoom_factor:
-                direction = event.angleDelta().y()
+                direction = value 
         else:
             if MIN_ZOOM < self._zoom_factor:
-                direction = event.angleDelta().y()
+                direction = value
 
         #zoom on mouse pointer
         center_on = self.world_point(event)
@@ -135,7 +152,7 @@ class SmartCanvas(QFrame):
         inverse_transform,_ = self._transform.inverted()
         return Point(*inverse_transform.map(point.x, point.y))
     
-    def mouseMoveEvent(self, event) -> None:
+    def mouseMoveEvent(self, event) -> None: #TODO: how to detect trackpad?
         mouseloc = self.world_point(event) 
         if event.buttons() == Qt.MouseButton.LeftButton: #left button drag
             if self.selected_object:
