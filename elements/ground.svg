@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="100mm"
-   height="100mm"
-   viewBox="0 0 100 100"
+   width="33.670879mm"
+   height="18.408381mm"
+   viewBox="0 0 33.670879 18.408381"
    version="1.1"
    id="svg5"
-   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   inkscape:version="1.2.2 (b0a84865, 2022-12-01)"
    sodipodi:docname="ground.svg"
    inkscape:export-filename="ground.png"
    inkscape:export-xdpi="117.687"
@@ -28,23 +28,24 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="1.1300912"
-     inkscape:cx="103.97391"
-     inkscape:cy="268.5624"
-     inkscape:window-width="1918"
-     inkscape:window-height="1048"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
+     inkscape:cx="38.492469"
+     inkscape:cy="160.60651"
+     inkscape:window-width="1733"
+     inkscape:window-height="1097"
+     inkscape:window-x="67"
+     inkscape:window-y="44"
+     inkscape:window-maximized="0"
      inkscape:current-layer="layer1" />
   <defs
      id="defs2" />
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
+     id="layer1"
+     transform="translate(-33.796504,-19.834619)">
     <path
        style="fill:none;stroke:#000000;stroke-width:2.99999;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-       d="M 35.530409,42.025999 51.140977,57.346124 66.201722,41.937671 Z"
+       d="M 35.296283,21.422941 50.906851,36.743066 65.967596,21.334613 Z"
        id="path8259"
        sodipodi:nodetypes="cccc" />
   </g>

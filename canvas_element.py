@@ -1,5 +1,5 @@
 from constants import *
-from PySide2.QtGui import QColorConstants, QPen
+from PySide6.QtGui import QColorConstants, QPen
 
 class CanvasElement:
     

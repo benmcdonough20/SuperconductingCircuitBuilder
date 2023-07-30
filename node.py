@@ -1,9 +1,9 @@
 from canvas_element import CanvasElement
 from constants import *
 from math import sin, cos, pi
-from PySide2.QtGui import QPen, QColorConstants, QPolygon
-from PySide2.QtCore import QPoint
-from PySide2.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
+from PySide6.QtGui import QPen, QColorConstants, QPolygon
+from PySide6.QtCore import QPoint
+from PySide6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
 from numpy.linalg import matrix_power
 
 GROUND_RAD = .3*SPACING
@@ -89,6 +89,9 @@ class Node(CanvasElement):
         
          
 class Ground(Node):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def toolbar(self, update):
         return QToolBar()

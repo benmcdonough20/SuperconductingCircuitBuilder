@@ -1,7 +1,6 @@
-from PySide2.QtWidgets import (
+from PySide6.QtWidgets import (
     QMainWindow, 
     QApplication, 
-    QAction,
     QSpacerItem,
     QSizePolicy,
     QToolBar, 
@@ -13,8 +12,8 @@ from PySide2.QtWidgets import (
     QPushButton
 )
 import pickle
-from PySide2.QtGui import QDrag , QIcon
-from PySide2.QtCore import Qt, QMimeData
+from PySide6.QtGui import QDrag, QIcon, QAction
+from PySide6.QtCore import Qt, QMimeData, QPoint
 
 from pathlib import Path
 
@@ -186,9 +185,9 @@ class ToolDock(QDockWidget):
     
     def _elements(self):
         section_label = QLabel("Branch Elements")
-        add_capacitor = DragLabel("Add Capacitor", ObjectFactory.capacitor, "./elements/capacitor.svg")
-        add_inductor = DragLabel("Add Inductor", ObjectFactory.inductor, "./elements/Inductor.svg")
-        add_junction = DragLabel("Add Josephson Junction", ObjectFactory.junction, "./elements/JJ.svg")
+        add_capacitor = DragLabel("Add Capacitor", ObjectFactory.capacitor, "./elements/capacitor.svg", ICON_SIZE, .5*ICON_SIZE)
+        add_inductor = DragLabel("Add Inductor", ObjectFactory.inductor, "./elements/Inductor.svg", ICON_SIZE, .5*ICON_SIZE)
+        add_junction = DragLabel("Add Josephson Junction", ObjectFactory.junction, "./elements/JJ.svg", ICON_SIZE, .5*ICON_SIZE)
         self._layout.addWidget(section_label)
         self._layout.addWidget(add_capacitor)
         self._layout.addWidget(add_inductor)
@@ -196,7 +195,7 @@ class ToolDock(QDockWidget):
 
     def _nodes(self):
         section_label = QLabel("Nodes")
-        add_ground = DragLabel("Add Ground", ObjectFactory.ground, "./elements/ground.svg")
+        add_ground = DragLabel("Add Ground", ObjectFactory.ground, "./elements/ground.svg", .4*ICON_SIZE, .4*ICON_SIZE)
         self._layout.addWidget(section_label)
         self._layout.addWidget(add_ground)
 
@@ -233,12 +232,13 @@ class CircuitImport:
 
 
 class DragLabel(QLabel):
-    def __init__(self, text, element, icon_path):
+    def __init__(self, text, element, icon_path, icon_width, icon_height):
         super().__init__(text)
         self.element = element
-        self.icon = QIcon(icon_path).pixmap(ICON_SIZE,ICON_SIZE)
+        self.icon = QIcon(icon_path).pixmap(icon_width, icon_height)
         self.setPixmap(self.icon)
-        self.setMaximumWidth(ICON_SIZE)
+        self.setMaximumWidth(icon_width)
+        self.center = QPoint(icon_width/2, icon_width/4)
     
     def mouseMoveEvent(self, event):
         if event.buttons() == Qt.MouseButton.LeftButton:
@@ -247,10 +247,11 @@ class DragLabel(QLabel):
             drag = QDrag(self)
             drag.setMimeData(mime_data)
             drag.setPixmap(self.icon)
-            drag.exec_(Qt.DropAction.MoveAction)
+            drag.setHotSpot(self.center)
+            drag.exec(Qt.DropAction.MoveAction)
             event.accept()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     gui = CircuitBuilder()
-    app.exec_()
+    app.exec()

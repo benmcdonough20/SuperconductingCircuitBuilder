@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QFrame, QApplication, QAction
-from PySide2.QtGui import QColorConstants, QTransform, QPen, QPainter, QBrush, QIcon
-from PySide2.QtCore import Qt
+from PySide6.QtWidgets import QFrame, QApplication
+from PySide6.QtGui import QColorConstants, QTransform, QPen, QPainter, QBrush, QIcon, QAction
+from PySide6.QtCore import Qt
 
 from circuit import Circuit
 from constants import *
@@ -279,10 +279,10 @@ class SmartCanvas(QFrame):
     
     def dropEvent(self, event) -> None:
         eventloc = self.world_point(event)
-        eventloc += DROP_DISPLACEMENT
-        self.objectfactory.create(event.mimeData().text(), eventloc)
-        self.update()
-        self.gui.take_snapshot()
+        if not self.object_under(eventloc):
+            self.objectfactory.create(event.mimeData().text(), eventloc)
+            self.update()
+            self.gui.take_snapshot()
 
     def rightclick(self, mouseloc) :
         modifiers = QApplication.keyboardModifiers()

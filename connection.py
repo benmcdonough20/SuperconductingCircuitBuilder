@@ -1,8 +1,8 @@
 from constants import *
 from canvas_element import CanvasElement
-from PySide2.QtGui import QPen, QColorConstants
+from PySide6.QtGui import QPen, QColorConstants
 import numpy as np
-from PySide2.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
+from PySide6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
 
 
 class Connection(CanvasElement):

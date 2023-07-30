@@ -3,8 +3,8 @@ from canvas_element import CanvasElement
 from node import Node, Ground
 from connection import Connection
 import numpy as np
-from PySide2.QtGui import QIcon, QTransform, QPen, QColorConstants
-from PySide2.QtWidgets import (
+from PySide6.QtGui import QIcon, QTransform, QPen, QColorConstants, QAction
+from PySide6.QtWidgets import (
     QToolBar, 
     QWidget, 
     QLabel, 
@@ -12,7 +12,6 @@ from PySide2.QtWidgets import (
     QHBoxLayout, 
     QSpacerItem, 
     QSizePolicy, 
-    QAction
 )
 
 class BranchElement(CanvasElement):
@@ -154,7 +153,6 @@ class Capacitor(BranchElement):
         self.properties["C"] = self.C
         self.icon_path = "./elements/capacitor.svg"
         self.setIcon(self.icon_path, SPACING, SPACING)
-
 
 class JosephsonJunction(BranchElement):
 
