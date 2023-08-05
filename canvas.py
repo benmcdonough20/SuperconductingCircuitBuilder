@@ -53,7 +53,6 @@ class SmartCanvas(QFrame):
 
     def event(self, event):
         if isinstance(event, QNativeGestureEvent):
-            print(event.gestureType())
             if isinstance(event, QNativeGestureEvent) and event.gestureType() == Qt.NativeGestureType.ZoomNativeGesture:
                 return self._zoomEvent(event.value()*1000, event)
         return super().event(event)
