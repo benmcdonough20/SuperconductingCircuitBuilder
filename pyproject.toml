@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling", "numpy", "pyside6"]
+build-backend = "hatchling.build"
+
+[project]
+name = "SuperconductingCircuitBuilder"
+version = "0.0.1"
+authors = [
+  { name="Ben McDonough", email="ben.mcdonough@yale.edu" },
+]
+description = "A graphical user interface to create superconducting circuits intended to accompany scQubits"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/benmcdonough20/SuperconductingCircuitBuilder"
+"Bug Tracker" = "https://github.com/benmcdonough20/SuperconductingCircuitBuilder/issues"
