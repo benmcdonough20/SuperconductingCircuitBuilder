@@ -3,7 +3,7 @@ requires = ["hatchling", "numpy", "pyside6"]
 build-backend = "hatchling.build"
 
 [project]
-name = "SuperconductingCircuitBuilder"
+name = "sccircuitbuilder"
 version = "0.0.1"
 authors = [
   { name="Ben McDonough", email="ben.mcdonough@yale.edu" },

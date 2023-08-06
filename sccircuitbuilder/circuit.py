@@ -1,8 +1,8 @@
 from itertools import chain
-from node import Node, Ground
-from branch_element import BranchElement
-from connection import Connection, Anchor, Wire
-from constants import Point, SPACING
+from sccircuitbuilder.node import Node, Ground
+from sccircuitbuilder.branch_element import BranchElement
+from sccircuitbuilder.connection import Connection, Anchor, Wire
+from sccircuitbuilder.constants import Point, SPACING
 
 class Circuit:
     

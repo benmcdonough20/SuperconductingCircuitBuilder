@@ -18,11 +18,11 @@ from PySide6.QtCore import Qt, QMimeData, QPoint
 from pathlib import Path
 
 import sys
-from constants import *
-from canvas import SmartCanvas, ObjectFactory
-from circuit import Circuit
-from caretaker import Caretaker 
-
+import os
+from sccircuitbuilder.constants import *
+from sccircuitbuilder.canvas import SmartCanvas, ObjectFactory
+from sccircuitbuilder.circuit import Circuit
+from sccircuitbuilder.caretaker import Caretaker 
 
 class CircuitBuilder(QMainWindow):
 
@@ -54,17 +54,17 @@ class CircuitBuilder(QMainWindow):
         self.toolbar = QToolBar(self)
 
         undo = QAction("", self)
-        undo.setIcon(QIcon("./icons/undo"))
+        undo.setIcon(QIcon(os.path.join(os.path.dirname(__file__),"icons/undo")))
         self.toolbar.addAction(undo)
         undo.triggered.connect(self.undo)
 
         redo = QAction("", self)
-        redo.setIcon(QIcon("./icons/redo"))
+        redo.setIcon(QIcon(os.path.join(os.path.dirname(__file__),"icons/redo")))
         self.toolbar.addAction(redo)
         redo.triggered.connect(self.redo)
 
         clear = QAction("", self)
-        clear.setIcon(QIcon("./icons/clear"))
+        clear.setIcon(QIcon(os.path.join(os.path.dirname(__file__),"icons/clear")))
         self.toolbar.addAction(clear)
         clear.triggered.connect(self.canvas.clear)
         
@@ -185,9 +185,27 @@ class ToolDock(QDockWidget):
     
     def _elements(self):
         section_label = QLabel("Branch Elements")
-        add_capacitor = DragLabel("Add Capacitor", ObjectFactory.capacitor, "./elements/capacitor.svg", ICON_SIZE, .5*ICON_SIZE)
-        add_inductor = DragLabel("Add Inductor", ObjectFactory.inductor, "./elements/Inductor.svg", ICON_SIZE, .5*ICON_SIZE)
-        add_junction = DragLabel("Add Josephson Junction", ObjectFactory.junction, "./elements/JJ.svg", ICON_SIZE, .5*ICON_SIZE)
+        add_capacitor = DragLabel(
+            "Add Capacitor", 
+            ObjectFactory.capacitor, 
+            os.path.join(os.path.dirname(__file__),"elements/capacitor.svg"), 
+            ICON_SIZE, 
+            .5*ICON_SIZE
+        )
+        add_inductor = DragLabel(
+            "Add Inductor", 
+            ObjectFactory.inductor, 
+            os.path.join(os.path.dirname(__file__),"elements/Inductor.svg"),
+            ICON_SIZE, 
+            .5*ICON_SIZE
+        )
+        add_junction = DragLabel(
+            "Add Josephson Junction", 
+            ObjectFactory.junction, 
+            os.path.join(os.path.dirname(__file__),"elements/JJ.svg"), 
+            ICON_SIZE, 
+            .5*ICON_SIZE
+        )
         self._layout.addWidget(section_label)
         self._layout.addWidget(add_capacitor)
         self._layout.addWidget(add_inductor)
@@ -195,14 +213,20 @@ class ToolDock(QDockWidget):
 
     def _nodes(self):
         section_label = QLabel("Nodes")
-        add_ground = DragLabel("Add Ground", ObjectFactory.ground, "./elements/ground.svg", .4*ICON_SIZE, .4*ICON_SIZE)
+        add_ground = DragLabel(
+            "Add Ground", 
+            ObjectFactory.ground, 
+            os.path.join(os.path.dirname(__file__),"elements/ground.svg"), 
+            .4*ICON_SIZE, 
+            .4*ICON_SIZE
+        )
         self._layout.addWidget(section_label)
         self._layout.addWidget(add_ground)
 
     def _circuits(self, import_circuit):
-        section_label = QLabel("circuits")
+        section_label = QLabel("Circuits")
         self._layout.addWidget(section_label)
-        circuits_dir = Path("./circuits")
+        circuits_dir = Path(__file__).parent / "circuits"
         for entry in circuits_dir.iterdir():
             add_circuit = QPushButton(entry.stem)
             add_circuit.clicked.connect(CircuitImport(entry.name, import_circuit))
@@ -228,10 +252,10 @@ class CircuitImport:
         self.update = update
     
     def __call__(self):
-        self.update("./circuits/"+self.name)
-
+        self.update(os.path.join(os.path.dirname(__file__),"circuits/")+self.name)
 
 class DragLabel(QLabel):
+
     def __init__(self, text, element, icon_path, icon_width, icon_height):
         super().__init__(text)
         self.element = element
@@ -251,7 +275,10 @@ class DragLabel(QLabel):
             drag.exec(Qt.DropAction.MoveAction)
             event.accept()
 
-if __name__ == '__main__':
+def GUI():
     app = QApplication(sys.argv)
     gui = CircuitBuilder()
     app.exec()
+
+if __name__ == '__main__':
+    GUI()    

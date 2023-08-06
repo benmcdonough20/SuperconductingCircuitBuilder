@@ -1,7 +1,7 @@
-from canvas_element import CanvasElement
-from constants import *
+from sccircuitbuilder.canvas_element import CanvasElement
+from sccircuitbuilder.constants import *
 from math import sin, cos, pi
-from PySide6.QtGui import QPen, QColorConstants, QPolygon
+from PySide6.QtGui import QPen, QColorConstants, QPolygon, QIcon, QAction
 from PySide6.QtCore import QPoint
 from PySide6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
 from numpy.linalg import matrix_power
@@ -94,7 +94,26 @@ class Ground(Node):
         super().__init__(*args, **kwargs)
 
     def toolbar(self, update):
-        return QToolBar()
+        toolbar = QToolBar()
+        def rotateandupdate():
+            self.rotate()
+            update()
+        rotate = QAction("",toolbar)
+        rotate.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "icons/rotate")))
+        rotate.triggered.connect(rotateandupdate)
+        toolbar.addAction(rotate)
+
+        if not self.elements:
+            toolbar = QToolBar()
+            delete = QAction("",toolbar)
+            delete.setIcon(QIcon(os.path.join(os.path.dirname(__file__),"icons/trash")))
+            def deleteandupdate():
+                self.delete()
+                update()
+            delete.triggered.connect(deleteandupdate)
+            toolbar.addAction(delete)
+
+        return toolbar
 
     def add_to_circuit(self):
         self.circuit.add_ground(self)

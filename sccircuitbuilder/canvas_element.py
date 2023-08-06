@@ -1,4 +1,4 @@
-from constants import *
+from sccircuitbuilder.constants import *
 from PySide6.QtGui import QColorConstants, QPen
 
 class CanvasElement:

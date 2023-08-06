@@ -1,5 +1,5 @@
-from constants import *
-from canvas_element import CanvasElement
+from sccircuitbuilder.constants import *
+from sccircuitbuilder.canvas_element import CanvasElement
 from PySide6.QtGui import QPen, QColorConstants
 import numpy as np
 from PySide6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton

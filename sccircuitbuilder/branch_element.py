@@ -1,8 +1,10 @@
-from constants import *
-from canvas_element import CanvasElement
-from node import Node, Ground
-from connection import Connection
+from sccircuitbuilder.constants import *
+from sccircuitbuilder.canvas_element import CanvasElement
+from sccircuitbuilder.node import Node, Ground
+from sccircuitbuilder.connection import Connection
 import numpy as np
+import os
+from pathlib import Path
 from PySide6.QtGui import QIcon, QTransform, QPen, QColorConstants, QAction
 from PySide6.QtWidgets import (
     QToolBar, 
@@ -111,15 +113,28 @@ class BranchElement(CanvasElement):
             self.rotate()
             update()
         rotate = QAction("",toolbar)
-        rotate.setIcon(QIcon("./icons/rotate"))
+
+        here = Path(__file__).parent
+        rotate.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "icons/rotate")))
         rotate.triggered.connect(rotateandupdate)
         toolbar.addAction(rotate)
+
+        delete = QAction("",toolbar)
+        delete.setIcon(QIcon(os.path.join(os.path.dirname(__file__), "icons/trash")))
+        def deleteandupdate():
+            self.delete()
+            update()
+        delete.triggered.connect(deleteandupdate)
+        toolbar.addAction(delete)
+
         for prop in self.properties:
             propedit = PropEdit(prop, self.properties, update) 
             toolbar.addWidget(propedit)
+
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
         toolbar.addWidget(spacer)
+
         return toolbar
     
     def delete(self):
@@ -151,8 +166,8 @@ class Capacitor(BranchElement):
         self.name = "C"
         self.C = .02
         self.properties["C"] = self.C
-        self.icon_path = "./elements/capacitor.svg"
-        self.setIcon(self.icon_path, SPACING, SPACING)
+        self.icon_path =  "elements/capacitor.svg"
+        self.setIcon(os.path.join(os.path.dirname(__file__), self.icon_path), SPACING, SPACING)
 
 class JosephsonJunction(BranchElement):
 
@@ -164,8 +179,8 @@ class JosephsonJunction(BranchElement):
         self.EC = 1.2
         self.properties["EC"] = self.EC
         self.properties["EJ"] = self.EJ
-        self.icon_path = "./elements/JJ.svg"
-        self.setIcon(self.icon_path, SPACING, SPACING)
+        self.icon_path = "elements/JJ.svg"
+        self.setIcon(os.path.join(os.path.dirname(__file__), self.icon_path), SPACING, SPACING)
 
 class Inductor(BranchElement):
 
@@ -174,8 +189,8 @@ class Inductor(BranchElement):
         self.name = "L"
         self.L = 1.2
         self.properties["L"] = self.L
-        self.icon_path = "./elements/Inductor.svg"
-        self.setIcon(self.icon_path, SPACING, SPACING)
+        self.icon_path = "elements/Inductor.svg"
+        self.setIcon(os.path.join(os.path.dirname(__file__), self.icon_path), SPACING, SPACING)
 
 class PropEdit(QWidget):
     def __init__(self, key, properties, update):

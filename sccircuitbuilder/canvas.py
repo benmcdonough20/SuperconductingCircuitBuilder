@@ -1,12 +1,11 @@
 from PySide6.QtWidgets import QFrame, QApplication
-from PySide6.QtGui import QColorConstants, QTransform, QPen, QPainter, QBrush, QIcon, QAction, QNativeGestureEvent, QInputDevice
+from PySide6.QtGui import QColorConstants, QTransform, QPen, QPainter, QBrush, QNativeGestureEvent, QInputDevice
 from PySide6.QtCore import Qt
 
-from circuit import Circuit
-from constants import *
-from node import Ground
-from branch_element import Capacitor, Inductor, JosephsonJunction, BranchElement
-
+from sccircuitbuilder.circuit import Circuit
+from sccircuitbuilder.constants import *
+from sccircuitbuilder.node import Ground
+from sccircuitbuilder.branch_element import Capacitor, Inductor, JosephsonJunction, BranchElement
 
 class SmartCanvas(QFrame):
     
@@ -36,11 +35,6 @@ class SmartCanvas(QFrame):
 
         self._mouse_button = None
 
-
-        self.delete = QAction("", self)
-        self.delete.setIcon(QIcon("./icons/trash"))
-        self.delete.triggered.connect(self.delete_selected)
-    
     def world_point(self, event):
         return self.map(Point(event.pos().x(), event.pos().y()))
 
@@ -240,15 +234,6 @@ class SmartCanvas(QFrame):
         self.selected_group += circuit.grounds
         self.objects.add_circuit(circuit)
         self.update()
-    
-    def delete_selected(self):
-        for object in self.selected_group:
-            if issubclass(type(object), BranchElement): 
-                self.objects.remove_element(object)
-        self.gui.take_snapshot()
-        self.selected_group.clear()
-        self.load_options()
-        self.update()
 
     def clear(self):
         self.objects.clear()
@@ -271,10 +256,6 @@ class SmartCanvas(QFrame):
         if self.object_toolbar:
             self.gui.removeToolBar(self.object_toolbar)
             self.object_toolbar = None
-        if len(self.selected_group) > 0:
-            self.gui.toolbar.addAction(self.delete)
-        else:
-            self.gui.toolbar.removeAction(self.delete)
         if len(self.selected_group) == 1:
             object, = self.selected_group
             def update_and_check():
