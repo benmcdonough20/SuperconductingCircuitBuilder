@@ -1,18 +1,17 @@
 # Superconducting Circuit Builder
-This is a GUI for designing superconducting circuits intended to accompany the Python package scQubits.
+This is a GUI for designing superconducting circuits in the lumped-element limit intended to accompany the Python package scQubits.
 
 ## Installation
-* git clone https://github.com/benmcdonough20/CircuitBuilder.git
-* pip install pyside2
+`pip install sccircuitbuilder`
 
 ## Usage
-Start by running `python circuitbuilder.py`. The elements used to build a circuit are
+Run `import sccircuitbuilder as sc`, then `sc.GUI()`. The elements used to build a circuit are
 1) Capacitor
 2) Inductor
 3) Josephson Junction
 
 Drag the icons from the toolbox onto the canvas to place down an element. Drag nodes together to connect them. Left-click on wires to add anchor points and drag 
-the anchor points to guide the wires.
+the anchor points to guide the wires. Export the circuit to scqubits to diagonalize and simulate the circuit!
 
 ### Keyboard
 * `Shift + Right Click` - add to selection
@@ -38,12 +37,12 @@ the anchor points to guide the wires.
 * Export to scQubits circuit format
 * Pre-made circuit library
 
-## Dependencies
-* Python 3.10.8
-* PySide2 5.15.8
-* Numpy 1.22.4
+## Future plans
+* Offset charge / external flux
+* Further integration with scqubits
+* Accompanying tutorials
 
 ## Known issues
-There are still many bugs!
 * Right click has no activation distance, so using a mouse will result in some dropped right clicks
 * Sometime import/undo/redo (the memento-based functionalities) crash, but usually they seem to work 
+* File save is not very inteligent and adds `.circuit` to the end of the filename regardless of whether it is already there

@@ -5,6 +5,7 @@ from PySide6.QtGui import QPen, QColorConstants, QPolygon, QIcon, QAction
 from PySide6.QtCore import QPoint
 from PySide6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
 from numpy.linalg import matrix_power
+import os
 
 GROUND_RAD = .3*SPACING
 
@@ -47,15 +48,13 @@ class Node(CanvasElement):
     
     def toolbar(self, update):
         toolbar = QToolBar()
-        split = QPushButton("Split Node")
+        split = QAction("",toolbar)
+        split.setIcon(QIcon(os.path.join(os.path.dirname(__file__),"icons/split")))
         def splitandupdate():
             self.split()
             update()
-        split.clicked.connect(splitandupdate)
-        toolbar.addWidget(split)
-        spacer = QWidget()
-        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
-        toolbar.addWidget(spacer)
+        split.triggered.connect(splitandupdate)
+        toolbar.addAction(split)
         return toolbar
     
     def split(self):
@@ -104,7 +103,6 @@ class Ground(Node):
         toolbar.addAction(rotate)
 
         if not self.elements:
-            toolbar = QToolBar()
             delete = QAction("",toolbar)
             delete.setIcon(QIcon(os.path.join(os.path.dirname(__file__),"icons/trash")))
             def deleteandupdate():

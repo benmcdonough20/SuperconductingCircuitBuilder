@@ -1,9 +1,9 @@
 from sccircuitbuilder.constants import *
 from sccircuitbuilder.canvas_element import CanvasElement
-from PySide6.QtGui import QPen, QColorConstants
+from PySide6.QtGui import QPen, QColorConstants, QAction, QIcon
 import numpy as np
 from PySide6.QtWidgets import QToolBar, QWidget, QSizePolicy, QPushButton
-
+import os
 
 class Connection(CanvasElement):
 
@@ -78,6 +78,12 @@ class Connection(CanvasElement):
         self.circuit.remove_anchor(anchor)
         self.wires.remove(tail)
         head.dest = tail.dest
+
+    def toolbar(self, update):
+        if self.selected_anchor:
+            return self.selected_anchor.toolbar(update)
+        else:
+            return QToolBar()
     
     class ConnectionMomento:
         def __init__(self, connection):
@@ -214,13 +220,11 @@ class Anchor(CanvasElement):
 
     def toolbar(self, update):
         toolbar = QToolBar()
-        split = QPushButton("Delete")
+        delete = QAction("",toolbar)
+        delete.setIcon(QIcon(os.path.join(os.path.dirname(__file__),"icons/trash")))
         def deleteandupdate():
             self.delete()
             update()
-        split.clicked.connect(deleteandupdate)
-        toolbar.addWidget(split)
-        spacer = QWidget()
-        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
-        toolbar.addWidget(spacer)
+        delete.triggered.connect(deleteandupdate)
+        toolbar.addAction(delete)
         return toolbar
