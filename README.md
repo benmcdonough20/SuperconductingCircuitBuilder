@@ -44,5 +44,5 @@ the anchor points to guide the wires. Export the circuit to scqubits to diagonal
 
 ## Known issues
 * Right click has no activation distance, so using a mouse will result in some dropped right clicks
-* Sometime import/undo/redo (the memento-based functionalities) crash, but usually they seem to work 
-* File save is not very inteligent and adds `.circuit` to the end of the filename regardless of whether it is already there
+* Sometimes import/undo/redo (the memento-based functionalities) crash, but usually they seem to work 
+* File save is not very intelligent and adds `.circuit` to the end of the filename regardless of whether it is already there
