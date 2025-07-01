@@ -117,16 +117,19 @@ class CircuitBuilder(QMainWindow):
     def undo(self):
         snapshot = self.caretaker.undo()
         self.canvas.restore(snapshot)
-
+    
     def save_dialogue(self):
-        fname,_ = QFileDialog.getSaveFileName(
+        fname, _ = QFileDialog.getSaveFileName(
                 self,
                 "Save File",
                 "./",
                 "circuits (*.circuit)",
-            )
-        self.save(fname+".circuit")
-    
+        )
+        if fname:
+            if not fname.lower().endswith(".circuit"):
+                fname += ".circuit"
+            self.save(fname)
+
     def open_dialogue(self):
         fname,_ = QFileDialog.getOpenFileName(
                 self,
